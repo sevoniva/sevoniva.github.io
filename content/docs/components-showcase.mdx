@@ -1,0 +1,151 @@
+---
+title: 组件库展示
+---
+
+# 组件库展示
+
+Fumadocs 内置了丰富的 UI 组件，以下展示所有可用组件。
+
+---
+
+## Callout 提示框
+
+支持 `info`、`warning`、`error`、`success` 四种类型。
+
+<Callout type="info">
+  这是一个信息提示框
+</Callout>
+
+<Callout type="warning" title="注意">
+  这是一个警告提示框
+</Callout>
+
+<Callout type="error">
+  这是一个错误提示框
+</Callout>
+
+<Callout type="success">
+  这是一个成功提示框
+</Callout>
+
+---
+
+## Cards 卡片
+
+用于展示链接卡片或信息卡片。
+
+<Cards>
+  <Card title="快速开始" href="/docs/getting-started">
+    了解如何快速上手使用
+  </Card>
+  <Card title="组件库" href="/docs/components-showcase">
+    查看所有可用组件
+  </Card>
+</Cards>
+
+---
+
+## Steps 步骤
+
+用于展示分步指引。
+
+<Steps>
+  <Step>
+    ### 第一步
+    安装依赖
+  </Step>
+  <Step>
+    ### 第二步
+    配置项目
+  </Step>
+  <Step>
+    ### 第三步
+    启动开发服务器
+  </Step>
+</Steps>
+
+---
+
+## Tabs 标签页
+
+用于展示多组内容的切换。
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    npm install
+  </Tab>
+  <Tab value="pnpm">
+    pnpm install
+  </Tab>
+  <Tab value="yarn">
+    yarn install
+  </Tab>
+</Tabs>
+
+---
+
+## Accordions 手风琴
+
+用于折叠/展开内容。
+
+<Accordions>
+  <Accordion title="什么是 Fumadocs？">
+    Fumadocs 是一个基于 Next.js 的文档框架，提供丰富的组件和优雅的界面。
+  </Accordion>
+  <Accordion title="如何安装？">
+    使用 pnpm 或 npm 安装 fumadocs-core 和 fumadocs-ui。
+  </Accordion>
+</Accordions>
+
+---
+
+## Files 文件树
+
+用于展示文件目录结构。
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+    <Folder name="docs">
+      <File name="page.tsx" />
+    </Folder>
+  </Folder>
+  <File name="package.json" />
+  <File name="tsconfig.json" />
+</Files>
+
+---
+
+## 代码块
+
+支持多种语言的代码高亮：
+
+```ts
+function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+```
+
+```bash
+pnpm install fumadocs-core fumadocs-ui
+```
+
+---
+
+## 表格
+
+| 特性 | 说明 |
+|------|------|
+| 静态导出 | 支持 Next.js 静态导出 |
+| MDX | 支持 Markdown 和 JSX |
+| 搜索 | 内置全文搜索 |
+| 主题 | 支持深色/浅色模式 |
+
+---
+
+## 链接
+
+[返回首页](/docs)
+
+[外部链接](https://github.com)

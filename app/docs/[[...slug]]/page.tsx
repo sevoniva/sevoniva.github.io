@@ -1,4 +1,5 @@
 import { source } from "@/lib/source";
+import { getMDXComponents } from "@/app/mdx-components";
 import {
   DocsBody,
   DocsDescription,
@@ -24,7 +25,7 @@ export default async function Page({
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX />
+        <MDX components={getMDXComponents()} />
       </DocsBody>
     </DocsPage>
   );
