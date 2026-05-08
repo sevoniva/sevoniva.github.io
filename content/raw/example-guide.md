@@ -1,0 +1,18 @@
+# 示例普通 Markdown 文档
+
+这是一个普通的 Markdown 文件，没有任何 frontmatter。
+
+运行 `pnpm convert-md` 后，它会自动被转换为 `.mdx`，并添加上 Fumadocs 需要的 YAML 头部。
+
+## 使用方法
+
+1. 把你的 `.md` 文件放到 `content/raw/` 目录（支持子目录）
+2. 运行 `pnpm convert-md`
+3. 转换后的 `.mdx` 会输出到 `content/docs/`
+4. 按需更新 `content/docs/meta.json` 调整顺序
+
+## 特性
+
+- 自动从正文第一行 `# 标题` 提取 title
+- 如果没有 `# 标题`，则用文件名生成标题
+- 已经带有 frontmatter 的文件会直接复制并改后缀
