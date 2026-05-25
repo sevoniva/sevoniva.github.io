@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-import { BookOpen, FileText, Layers, BarChart3 } from "lucide-react";
+import { BookOpen, FileText, Layers, BarChart3, Workflow } from "lucide-react";
 import { SevonivaIcon } from "@/components/logo";
 
 export const baseOptions: BaseLayoutProps = {
@@ -26,6 +26,13 @@ export const baseOptions: BaseLayoutProps = {
       url: "/crest",
       active: "nested-url",
       icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      type: "main",
+      text: "Nivora",
+      url: "/nivora",
+      active: "nested-url",
+      icon: <Workflow className="h-4 w-4" />,
     },
     {
       type: "menu",
