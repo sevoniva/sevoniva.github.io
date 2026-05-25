@@ -1,4 +1,5 @@
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import Mermaid from "@/components/Mermaid";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Card, Cards } from "fumadocs-ui/components/card";
@@ -16,6 +17,7 @@ import { TypeTable } from "fumadocs-ui/components/type-table";
 export function getMDXComponents() {
   return {
     ...defaultMdxComponents,
+    Mermaid,
     // Accordion
     Accordions,
     Accordion,

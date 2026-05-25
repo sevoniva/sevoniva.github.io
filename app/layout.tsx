@@ -3,8 +3,12 @@ import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sevoniva Docs",
-  description: "Documentation site powered by Fumadocs",
+  title: "sevoniva",
+  description: "One place to build, analyze & collaborate.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
