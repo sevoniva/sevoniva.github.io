@@ -14,7 +14,7 @@ export const baseOptions: BaseLayoutProps = {
   },
   links: [
     {
-      type: "link",
+      type: "main",
       text: "Memorica",
       url: "/memorica",
       active: "nested-url",

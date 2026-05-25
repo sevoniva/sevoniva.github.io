@@ -6,12 +6,5 @@ export default function HomeRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <HomeLayout
-      {...baseOptions}
-      className="dark:bg-[#151419] dark:[--color-fd-background:#151419] [--color-fd-primary:var(--color-brand)]"
-    >
-      {children}
-    </HomeLayout>
-  );
+  return <HomeLayout {...baseOptions}>{children}</HomeLayout>;
 }

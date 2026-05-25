@@ -7,12 +7,12 @@
 @theme {
   --color-brand: #6E62E8;
   --color-brand-foreground: #FFFFFF;
-  --color-brand-ink: #1E1E24;
-  --color-brand-cloud: #F4F4F7;
-  --color-brand-dark: #151419;
+  --color-fd-primary: #6E62E8;
+  --color-fd-primary-foreground: #FFFFFF;
 }
 
 .dark {
-  --color-brand: #8B80F0;
-  --color-brand-foreground: #0A0A0A;
+  --color-fd-background: #151419;
+  --color-fd-primary: #8B80F0;
+  --color-fd-primary-foreground: #0A0A0A;
 }
