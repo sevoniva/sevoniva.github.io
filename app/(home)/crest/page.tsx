@@ -10,6 +10,8 @@ import {
   Table,
 } from "lucide-react";
 import Mermaid from "@/components/Mermaid";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps, Step } from "fumadocs-ui/components/steps";
 
 export const metadata = {
   title: "Crest — 开源 BI 工具",
@@ -57,12 +59,12 @@ export default function CrestPage() {
               GitHub
             </a>
             <a
-              href="#"
+              href="https://github.com/sevoniva/Crest/blob/main/README.md"
               target="_blank"
               rel="noreferrer"
               className="inline-flex h-11 items-center gap-2 rounded-xl border px-6 text-sm font-medium text-fd-foreground transition-all hover:bg-fd-accent"
             >
-              在线体验
+              文档
               <ExternalLink className="h-4 w-4" />
             </a>
           </div>
@@ -179,7 +181,17 @@ export default function CrestPage() {
     RL -->|读元数据| MySQL
     EC -->|写文件| File
     SpringBoot --> Redis
-    JOB -->|定时任务| DT`}
+    JOB -->|定时任务| DT
+
+    classDef browserLayer fill:#DBEAFE,stroke:#3B82F6,color:#1E1E24
+    classDef backendLayer fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef moduleLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+    classDef storageLayer fill:#FEF3C7,stroke:#F59E0B,color:#1E1E24
+
+    class Vue,ECharts,RelationGraph browserLayer
+    class SpringBoot,Security,MyBatis backendLayer
+    class DS,DT,CH,DV,RL,SH,EC,JOB moduleLayer
+    class MySQL,Doris,Redis,File storageLayer`}
             />
           </div>
         </div>
@@ -302,7 +314,19 @@ export default function CrestPage() {
     D1 --> C1
     D2 --> C2
     C1 --> Dash
-    C2 --> Dash`}
+    C2 --> Dash
+
+    classDef sourceLayer fill:#DBEAFE,stroke:#3B82F6,color:#1E1E24
+    classDef tableLayer fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef datasetLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+    classDef chartLayer fill:#FEF3C7,stroke:#F59E0B,color:#1E1E24
+    classDef dashboardLayer fill:#EDE9FE,stroke:#6E62E8,color:#1E1E24
+
+    class MySQL2,OB,PG sourceLayer
+    class T1,T2,T3 tableLayer
+    class D1,D2 datasetLayer
+    class C1,C2 chartLayer
+    class Dash dashboardLayer`}
               />
             </div>
           </div>
@@ -416,25 +440,18 @@ export default function CrestPage() {
               <p className="mt-4 text-base text-fd-muted-foreground leading-relaxed">
                 提供 standalone（单机）和 distributed（分布式）两种运行模式，均支持 Docker 和 Kubernetes 部署。
               </p>
-              <div className="mt-8 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-fd-foreground">单机模式 standalone</h3>
-                  <p className="text-sm text-fd-muted-foreground">
+              <div className="mt-8">
+                <Steps>
+                  <Step title="单机模式 standalone">
                     内置 Doris 数仓。执行 install.sh 脚本完成部署。
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-fd-foreground">分布式模式 distributed</h3>
-                  <p className="text-sm text-fd-muted-foreground">
+                  </Step>
+                  <Step title="分布式模式 distributed">
                     外接 MySQL 和 Doris，适合生产环境多节点部署。
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-fd-foreground">Kubernetes</h3>
-                  <p className="text-sm text-fd-muted-foreground">
+                  </Step>
+                  <Step title="Kubernetes">
                     提供 Helm Chart，支持滚动更新和健康探针。
-                  </p>
-                </div>
+                  </Step>
+                </Steps>
               </div>
             </div>
 
@@ -474,17 +491,13 @@ export default function CrestPage() {
       {/* ─── API ─── */}
       <section className="border-t">
         <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-base font-semibold text-fd-foreground">接口文档</h2>
-              <p className="mt-1 text-sm text-fd-muted-foreground max-w-xl">
-                基于 SpringDoc OpenAPI，启动后访问 /doc.html 查看交互式文档，或 GET /v3/api-docs 获取原始 JSON。
-              </p>
-            </div>
-            <span className="text-xs text-fd-muted-foreground bg-fd-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap">
-              生产环境建议限制 /doc.html 访问
-            </span>
-          </div>
+          <h2 className="text-base font-semibold text-fd-foreground">接口文档</h2>
+          <p className="mt-1 text-sm text-fd-muted-foreground max-w-xl">
+            基于 SpringDoc OpenAPI，启动后访问 /doc.html 查看交互式文档，或 GET /v3/api-docs 获取原始 JSON。
+          </p>
+          <Callout type="warn" className="mt-4">
+            生产环境建议限制 /doc.html 访问
+          </Callout>
         </div>
       </section>
 
@@ -516,12 +529,12 @@ export default function CrestPage() {
               查看源码
             </a>
             <a
-              href="#"
+              href="https://github.com/sevoniva/Crest/blob/main/README.md"
               target="_blank"
               rel="noreferrer"
               className="inline-flex h-11 items-center gap-2 rounded-xl border px-6 text-sm font-medium text-fd-foreground transition-all hover:bg-fd-accent"
             >
-              在线体验
+              文档
               <ExternalLink className="h-4 w-4" />
             </a>
           </div>

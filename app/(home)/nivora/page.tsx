@@ -17,6 +17,8 @@ import {
   XCircle,
 } from "lucide-react";
 import Mermaid from "@/components/Mermaid";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Steps, Step } from "fumadocs-ui/components/steps";
 
 export const metadata = {
   title: "Nivora — DevOps Delivery Control Plane",
@@ -188,7 +190,13 @@ export default function NivoraPage() {
     ORCH --> DB
     AUDIT --> DB
     EVENT --> BUS
-    INTEG --> API`}
+    INTEG --> API
+
+    classDef cpLayer fill:#E0E7FF,stroke:#6366F1,color:#1E1E24
+    classDef stateLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+
+    class API,ORCH,POLICY,INTEG,AUDIT,EVENT cpLayer
+    class DB,OBJ,BUS stateLayer`}
             />
             <Mermaid
               chart={`flowchart TB
@@ -211,7 +219,13 @@ export default function NivoraPage() {
     R2 --> EX2
     R3 --> EX3 & EX4
     R4 --> EX5
-    R5 --> EX6`}
+    R5 --> EX6
+
+    classDef runnerLayer fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef executorLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+
+    class RM,R1,R2,R3,R4,R5 runnerLayer
+    class EX1,EX2,EX3,EX4,EX5,EX6 executorLayer`}
             />
             <Mermaid
               chart={`flowchart TB
@@ -224,7 +238,10 @@ export default function NivoraPage() {
         CLOUD["Cloud<br/>AWS/Aliyun/Tencent"]
         SEC["Security<br/>Trivy/Cosign"]
         OBS["Observability<br/>OTel/Prometheus"]
-    end`}
+    end
+
+    classDef extLayer fill:#FEF3C7,stroke:#F59E0B,color:#1E1E24
+    class SCM,ART,K8S,ARGO,HOST,CLOUD,SEC,OBS extLayer`}
             />
           </div>
         </div>
@@ -318,7 +335,16 @@ export default function NivoraPage() {
     HYAML --> RESULT
     ARGO --> RESULT
     WEBHOOK --> RESULT
-    RESULT --> CP`}
+    RESULT --> CP
+
+    classDef cpNode fill:#E0E7FF,stroke:#6366F1,color:#1E1E24
+    classDef runnerNode fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef executorNode fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+    classDef resultNode fill:#EDE9FE,stroke:#8B80F0,color:#1E1E24
+
+    class CP,RM,RESULT cpNode
+    class LOCAL,HOST,K8S,GITOPS,CLOUD runnerNode
+    class SHELL,SSH,KJOB,HYAML,ARGO,WEBHOOK executorNode`}
             />
           </div>
         </div>
@@ -378,7 +404,15 @@ export default function NivoraPage() {
     SECRET --> SECRETAD
     POLICY --> POLICYAD
     BUS --> BUSAD
-    OBJ --> OBJAD`}
+    OBJ --> OBJAD
+
+    classDef coreLayer fill:#E0E7FF,stroke:#6366F1,color:#1E1E24
+    classDef portLayer fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef adapterLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+
+    class PIPE,DEPLOY,ARTUC,POLICYUC,RUNUC coreLayer
+    class SCM,ART,CLOUD,EXEC,WF,SECRET,POLICY,BUS,OBJ portLayer
+    class SCMAD,ARTAD,CLOUDAD,EXECAD,SECRETAD,POLICYAD,BUSAD,OBJAD adapterLayer`}
           />
         </div>
       </section>
@@ -430,7 +464,19 @@ export default function NivoraPage() {
     APPROVAL -->|Yes| DEPLOY
     DEPLOY --> MODE --> VERIFY --> ROLLBACK
     ROLLBACK -->|Yes| RB --> TIMELINE
-    ROLLBACK -->|No| TIMELINE`}
+    ROLLBACK -->|No| TIMELINE
+
+    classDef triggerLayer fill:#E0E7FF,stroke:#6366F1,color:#1E1E24
+    classDef policyLayer fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef execLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+    classDef deployLayer fill:#FEF3C7,stroke:#F59E0B,color:#1E1E24
+    classDef timelineLayer fill:#EDE9FE,stroke:#8B80F0,color:#1E1E24
+
+    class START,INGEST,PLAN,SNAPSHOT triggerLayer
+    class POLICY,DENIED,QUEUE,WORKER,RUNTIME,SELECT policyLayer
+    class RUNNER,EXECUTOR,LOGS,STATUS,EVENTS,AUDIT execLayer
+    class APPROVAL,DEPLOY,MODE,VERIFY,ROLLBACK,RB deployLayer
+    class TIMELINE timelineLayer`}
           />
         </div>
       </section>
@@ -761,31 +807,18 @@ export default function NivoraPage() {
               <p className="mt-4 text-base text-fd-muted-foreground leading-relaxed">
                 支持 Docker Compose、Helm Chart 和 Kubernetes manifests。当前阶段适用于本地开发和评估。
               </p>
-              <div className="mt-8 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-fd-foreground">
-                    Docker Compose
-                  </h3>
-                  <p className="text-sm text-fd-muted-foreground">
+              <div className="mt-8">
+                <Steps>
+                  <Step title="Docker Compose">
                     Server + worker + runner + PostgreSQL 本地组合。
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-fd-foreground">
-                    Helm Chart
-                  </h3>
-                  <p className="text-sm text-fd-muted-foreground">
+                  </Step>
+                  <Step title="Helm Chart">
                     Production profile、rolling update、health probes。
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-fd-foreground">
-                    Kubernetes
-                  </h3>
-                  <p className="text-sm text-fd-muted-foreground">
+                  </Step>
+                  <Step title="Kubernetes">
                     Native YAML manifests。
-                  </p>
-                </div>
+                  </Step>
+                </Steps>
               </div>
             </div>
 
@@ -862,24 +895,22 @@ export default function NivoraPage() {
       {/* ─── API ─── */}
       <section className="border-t">
         <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-base font-semibold text-fd-foreground">
-                API
-              </h2>
-              <p className="mt-1 text-sm text-fd-muted-foreground max-w-xl">
-                REST + OpenAPI。未实现端点返回{" "}
-                <code className="text-xs bg-fd-muted/50 px-1 py-0.5 rounded">
-                  not_implemented
-                </code>{" "}
-                结构化响应，不返回 mock 数据。
-              </p>
-            </div>
-            <div className="text-xs text-fd-muted-foreground bg-fd-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap">
+          <h2 className="text-base font-semibold text-fd-foreground">
+            API
+          </h2>
+          <p className="mt-1 text-sm text-fd-muted-foreground max-w-xl">
+            REST + OpenAPI。未实现端点返回{" "}
+            <code className="text-xs bg-fd-muted/50 px-1 py-0.5 rounded">
+              not_implemented
+            </code>{" "}
+            结构化响应，不返回 mock 数据。
+          </p>
+          <Callout type="info" className="mt-4">
+            <div className="flex flex-wrap gap-1 text-xs font-mono">
               /api/v1/orgs · /projects · /pipelines · /pipeline-runs ·
               /deployments · /releases
             </div>
-          </div>
+          </Callout>
         </div>
       </section>
 
@@ -1084,18 +1115,21 @@ function CapabilityRow({
       text: "text-green-600 dark:text-green-400",
       label: "已完成",
       dot: "bg-green-500",
+      percent: 100,
     },
     progress: {
       bg: "bg-amber-500/10",
       text: "text-amber-600 dark:text-amber-400",
       label: "进行中",
       dot: "bg-amber-500",
+      percent: 60,
     },
     planned: {
       bg: "bg-fd-muted/30",
       text: "text-fd-muted-foreground",
       label: "规划中",
       dot: "bg-fd-muted-foreground/40",
+      percent: 0,
     },
   };
   const c = config[status];
@@ -1104,6 +1138,12 @@ function CapabilityRow({
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <span className={`h-2 w-2 rounded-full flex-shrink-0 ${c.dot}`} />
         <span className="text-sm font-medium text-fd-foreground">{name}</span>
+        <div className="hidden sm:block flex-1 h-1 max-w-[100px] bg-fd-muted/40 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full ${c.dot}`}
+            style={{ width: `${c.percent}%` }}
+          />
+        </div>
       </div>
       <span
         className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 w-fit ${c.bg} ${c.text}`}

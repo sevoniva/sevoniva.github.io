@@ -75,7 +75,7 @@ export default function MemoricaPage() {
           <div className="flex items-center gap-2 px-5 py-3 border-b bg-fd-muted/30">
             <div className="flex gap-1.5">
               <div className="h-3 w-3 rounded-full bg-red-400/80" />
-              <div className="h-3 w-3 rounded-full bg-yellow-400/80" />
+              <div className="h-3 w-3 rounded-full bg-[#6E62E8]/80" />
               <div className="h-3 w-3 rounded-full bg-green-400/80" />
             </div>
             <span className="ml-3 text-xs text-fd-muted-foreground font-mono">
@@ -248,7 +248,17 @@ export default function MemoricaPage() {
     SpringBoot --> JPA
     JPA --> Postgres
     SpringBoot --> MinIO
-    React --> MinIO`}
+    React --> MinIO
+
+    classDef clientLayer fill:#EDE9FE,stroke:#6E62E8,color:#1E1E24
+    classDef apiLayer fill:#CFFAFE,stroke:#06B6D4,color:#1E1E24
+    classDef collabLayer fill:#DCFCE7,stroke:#22C55E,color:#1E1E24
+    classDef storageLayer fill:#FEF3C7,stroke:#F59E0B,color:#1E1E24
+
+    class React,TipTap,Yjs clientLayer
+    class SpringBoot,JPA,Security apiLayer
+    class Hocuspocus,Redis collabLayer
+    class Postgres,MinIO storageLayer`}
           />
         </div>
       </section>
@@ -370,7 +380,7 @@ export default function MemoricaPage() {
                 <div className="flex items-center gap-2 px-3 py-2 border-b bg-fd-background rounded-t-lg">
                   <div className="flex gap-1.5">
                     <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#6E62E8]/80" />
                     <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
                   </div>
                   <span className="ml-2 text-xs text-fd-muted-foreground font-mono">

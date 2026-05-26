@@ -11,8 +11,34 @@
   --color-fd-primary-foreground: #FFFFFF;
 }
 
+/* ─── Mermaid Diagram Theme Variables ─── */
+:root {
+  --mermaid-node-fill: #EDE9FE;
+  --mermaid-node-stroke: #6E62E8;
+  --mermaid-text-color: #1E1E24;
+  --mermaid-edge-color: #8B80F0;
+  --mermaid-cluster-fill: #F5F3FF;
+  --mermaid-cluster-stroke: #6E62E8;
+  --mermaid-cluster-text: #6E62E8;
+  --mermaid-note-fill: #F5F3FF;
+  --mermaid-note-stroke: #6E62E8;
+  --mermaid-actor-fill: #EDE9FE;
+  --mermaid-actor-stroke: #6E62E8;
+}
+
 .dark {
   --color-fd-background: #151419;
   --color-fd-primary: #8B80F0;
   --color-fd-primary-foreground: #0A0A0A;
+  --mermaid-node-fill: #2A2640;
+  --mermaid-node-stroke: #8B80F0;
+  --mermaid-text-color: #E2E0F0;
+  --mermaid-edge-color: #8B80F0;
+  --mermaid-cluster-fill: #1E1B33;
+  --mermaid-cluster-stroke: #8B80F0;
+  --mermaid-cluster-text: #A29BFE;
+  --mermaid-note-fill: #1E1B33;
+  --mermaid-note-stroke: #8B80F0;
+  --mermaid-actor-fill: #2A2640;
+  --mermaid-actor-stroke: #8B80F0;
 }
