@@ -24,7 +24,7 @@ const PRODUCTS = [
     tag: "数据 BI",
     color: "#3B82F6",
     colorLight: "#EAF1FE",
-    description: "把数据变成决策依据，看板与洞察一站搞定。",
+    description: "数据看板与指标分析。拖拽搭建，无需写代码。",
     href: "/crest",
     icon: <BarChart3 className="h-5 w-5" />,
   },
@@ -34,7 +34,7 @@ const PRODUCTS = [
     tag: "协同文档",
     color: "#6E62E8",
     colorLight: "#EEECFB",
-    description: "团队的知识写下来、被记住、随时找得回。",
+    description: "团队文档与知识管理。多人协作，全文检索。",
     href: "/memorica",
     icon: <FileText className="h-5 w-5" />,
   },
@@ -44,7 +44,7 @@ const PRODUCTS = [
     tag: "交付",
     color: "#1FB6A6",
     colorLight: "#E7F7F4",
-    description: "从提交到交付，流水线把每一步串起来。",
+    description: "构建、测试、部署自动串联。状态可见，支持回滚。",
     href: "/nivora",
     icon: <Workflow className="h-5 w-5" />,
   },
@@ -54,7 +54,7 @@ const PRODUCTS = [
     tag: "即将推出",
     color: "#F5A623",
     colorLight: "#FEF3E0",
-    description: "源码托管与协作评审，贴合团队研发流程。",
+    description: "Git 托管与代码评审。分支保护，MR 工作流。",
     href: "#",
     icon: <GitBranch className="h-5 w-5" />,
   },
@@ -110,7 +110,7 @@ export default function HomePage() {
                   <rect x="8" y="54" width="40" height="40" rx="11" fill="#F5A623" />
                   <rect x="54" y="54" width="40" height="40" rx="11" fill="#1FB6A6" transform="rotate(14 74 74)" />
                 </svg>
-                一个平台 · 一整套工具
+                开源产品套件
               </div>
 
               <h1 className="text-4xl font-bold tracking-tight text-fd-foreground sm:text-5xl lg:text-[3.25rem] leading-[1.08]">
@@ -120,7 +120,7 @@ export default function HomePage() {
               </h1>
 
               <p className="mt-5 max-w-lg mx-auto lg:mx-0 text-lg leading-relaxed" style={{ color: "#73717E" }}>
-                sevoniva 把数据 BI、协同文档、交付流水线收进同一套体验。一次登录，贯穿团队从分析、记录到上线的整个工作流。
+                Crest 数据看板、Memorica 协同文档与 Nivora 交付流水线。三个开源模块，共享账户与权限体系，可独立部署，也可组合使用。
               </p>
 
               <div className="mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-4">
@@ -129,7 +129,7 @@ export default function HomePage() {
                   className="group inline-flex h-12 items-center gap-2 rounded-xl px-7 text-sm font-semibold text-white transition-all hover:shadow-lg"
                   style={{ backgroundColor: "#1E1E24" }}
                 >
-                  免费开始
+                  浏览产品
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <Link
@@ -172,11 +172,11 @@ export default function HomePage() {
       >
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-between gap-6 py-6">
-            <StatItem value="4+" label="产品，持续生长" />
-            <StatItem value="1" label="次登录，全线打通" />
-            <StatItem value="∞" label="可扩展的模块矩阵" />
+            <StatItem value="4" label="个模块" />
+            <StatItem value="1" label="套账户体系" />
+            <StatItem value="∞" label="按需扩展" />
             <div className="hidden sm:block text-sm font-semibold" style={{ color: "#1E1E24" }}>
-              数据 · 文档 · 代码 · 运维
+              数据 · 文档 · 交付 · 代码
             </div>
           </div>
         </div>
@@ -186,10 +186,10 @@ export default function HomePage() {
       <section id="products" className="container mx-auto px-4 py-24">
         <div className="text-center max-w-xl mx-auto mb-14">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-fd-foreground">
-            一个平台，装下团队的所有工具
+            产品
           </h2>
           <p className="mt-4 text-lg" style={{ color: "#73717E" }}>
-            不同的产品各有性格，却共享同一套体验、同一处入口。工具越用越多，体验始终如一。
+            Crest、Memorica、Nivora 三个模块共享账户与权限，可按需组合。
           </p>
         </div>
 
@@ -244,11 +244,8 @@ export default function HomePage() {
       <section className="container mx-auto px-4 pb-24">
         <div className="text-center max-w-xl mx-auto mb-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-fd-foreground">
-            深入了解每个产品
+            模块详情
           </h2>
-          <p className="mt-4 text-lg" style={{ color: "#73717E" }}>
-            每个模块都经过精心设计，既可独立运行，也能无缝协作。
-          </p>
         </div>
 
         <Tabs
@@ -290,14 +287,14 @@ export default function HomePage() {
                     </div>
 
                     <div className="mt-8">
-                      <Callout type="info" title="快速跳转">
+                      <Callout type="info" title="文档">
                         查看{" "}
                         <Link
                           href={p.href}
                           className="font-semibold underline underline-offset-2"
                           style={{ color: p.color }}
                         >
-                          {p.name} 完整文档
+                          {p.name} 文档
                         </Link>{" "}
                         了解架构、部署与 API。
                       </Callout>
@@ -330,31 +327,31 @@ export default function HomePage() {
       <section className="container mx-auto px-4 pb-24">
         <div className="text-center max-w-xl mx-auto mb-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-fd-foreground">
-            快速开始
+            部署
           </h2>
           <p className="mt-4 text-lg" style={{ color: "#73717E" }}>
-            三步即可在自有环境中运行 sevoniva。
+            三步部署到自有环境。
           </p>
         </div>
 
         <div className="max-w-2xl mx-auto">
           <Steps>
             <Step>
-              <p className="font-medium">选择产品模块</p>
+              <p className="font-medium">选择模块</p>
               <p className="text-sm text-fd-muted-foreground mt-1">
-                浏览 Crest、Memorica、Nivora 的产品文档，确定适合你当前需求的模块组合。
+                确定需要部署的模块组合。
               </p>
             </Step>
             <Step>
               <p className="font-medium">阅读部署指南</p>
               <p className="text-sm text-fd-muted-foreground mt-1">
-                每个产品均提供 Docker Compose、Helm Chart 与裸机部署三种方式，按环境选择即可。
+                提供 Docker Compose、Helm Chart 与裸机三种方式。
               </p>
             </Step>
             <Step>
-              <p className="font-medium">开始构建</p>
+              <p className="font-medium">执行部署</p>
               <p className="text-sm text-fd-muted-foreground mt-1">
-                克隆仓库，配置环境变量，执行启动命令。完整的 API 文档与 SDK 示例助你快速集成。
+                克隆仓库，配置环境变量，执行启动命令。
               </p>
             </Step>
           </Steps>
@@ -369,7 +366,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-xl mx-auto mb-14">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-fd-foreground">
-              为什么选 sevoniva
+              特点
             </h2>
             <p className="mt-4 text-lg" style={{ color: "#73717E" }}>
               一套体系，省去工具之间的来回切换与拼接。
@@ -382,21 +379,21 @@ export default function HomePage() {
               iconBg="#EEECFB"
               iconColor="#6E62E8"
               title="统一体验"
-              description="同一套设计语言与交互，换工具不换习惯，上手成本趋近于零。"
+              description="同一套设计语言与交互，换工具不换习惯。"
             />
             <BenefitCard
               icon={<Link2 className="h-5 w-5" />}
               iconBg="#EAF1FE"
               iconColor="#3B82F6"
               title="数据打通"
-              description="文档引用看板、流水线回写指标——产品之间天然相连，不再各自为政。"
+              description="文档引用看板、流水线回写指标，模块之间直接连通。"
             />
             <BenefitCard
               icon={<ShieldCheck className="h-5 w-5" />}
               iconBg="#E7F7F4"
               iconColor="#1FB6A6"
               title="统一治理"
-              description="账号、权限、审计集中管理，适配企业与金融级合规要求。"
+              description="账号、权限、审计集中管理。"
             />
           </div>
         </div>
@@ -415,7 +412,7 @@ export default function HomePage() {
             把团队的工具，收进一处
           </h2>
           <p className="relative max-w-lg mx-auto text-lg mb-10" style={{ color: "#B9B8C4" }}>
-            免费开始，随团队成长按需扩展。
+            开源，可自托管，按需扩展。
           </p>
           <div className="relative flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -442,7 +439,7 @@ export default function HomePage() {
       <footer className="border-t">
         <div className="container mx-auto px-4 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-fd-muted-foreground">
-            © {new Date().getFullYear()} sevoniva · 构建、分析、协作，在一处
+            © {new Date().getFullYear()} sevoniva
           </p>
           <div className="flex items-center gap-6">
             <a
