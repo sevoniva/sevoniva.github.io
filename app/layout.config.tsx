@@ -5,10 +5,10 @@ import { SevonivaIcon } from "@/components/logo";
 export const baseOptions: BaseLayoutProps = {
   nav: {
     title: (
-      <>
-        <SevonivaIcon className="h-5 w-5" />
-        <span className="font-medium">sevoniva</span>
-      </>
+      <div className="flex items-center gap-2.5">
+        <SevonivaIcon className="h-7 w-7" />
+        <span className="font-semibold text-lg">Sevoniva</span>
+      </div>
     ),
     url: "/",
   },
