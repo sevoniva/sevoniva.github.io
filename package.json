@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "sync-docs": "node scripts/sync-github-docs.mjs",
+    "convert-md": "node scripts/convert-md.mjs",
+    "build": "pnpm sync-docs && pnpm convert-md && next build",
     "start": "next start",
-    "lint": "eslint",
-    "convert-md": "node scripts/convert-md.mjs"
+    "lint": "eslint"
   },
   "dependencies": {
     "@types/mdx": "^2.0.13",

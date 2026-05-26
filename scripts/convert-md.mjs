@@ -2,10 +2,11 @@
 /**
  * 将普通 Markdown (.md) 批量转换为 Fumadocs MDX (.mdx)
  *
+ * 带 MDX 兼容性预处理，自动处理 GitHub Markdown 中 MDX 不支持的语法。
+ *
  * 用法：
- *   pnpm convert-md                    # 转换 content/raw/ 下所有 .md
- *   pnpm convert-md --dir ./docs       # 指定其他目录
- *   pnpm convert-md --out ./content/docs  # 指定输出目录
+ *   pnpm convert-md
+ *   pnpm convert-md --dir ./docs --out ./content/docs
  */
 import fs from "fs/promises";
 import path from "path";
@@ -18,10 +19,21 @@ const OUT_DIR = process.argv.includes("--out")
   ? process.argv[process.argv.indexOf("--out") + 1]
   : "content/docs";
 
-/**
- * 从文件名生成标题
- * hello-world.md -> Hello World
- */
+// MDX/Shiki 支持的代码块语言白名单（常见 + 项目用到的）
+// 不在这个列表中的语言会被替换为 "text"，避免 build 失败
+const SUPPORTED_LANGS = new Set([
+  "bash", "sh", "shell", "zsh",
+  "js", "javascript", "ts", "typescript", "jsx", "tsx",
+  "go", "golang", "java", "kotlin", "rust", "c", "cpp", "cxx", "h",
+  "py", "python", "rb", "ruby", "php", "perl",
+  "json", "yaml", "yml", "toml", "xml", "svg",
+  "sql", "psql", "mysql", "postgres", "postgresql",
+  "html", "css", "scss", "sass", "less", "md", "mdx",
+  "dockerfile", "docker", "makefile", "nginx", "vim", "lua",
+  "graphql", "regex", "diff", "ini", "properties",
+  "http", "curl", "log", "text", "plaintext", "",
+]);
+
 function filenameToTitle(filename) {
   const base = path.basename(filename, path.extname(filename));
   return base
@@ -29,52 +41,91 @@ function filenameToTitle(filename) {
     .replace(/^\w/, (c) => c.toUpperCase());
 }
 
-/**
- * 从内容中提取第一行 # 标题
- */
 function extractTitle(content) {
   const match = content.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : null;
 }
 
-/**
- * 检查是否已有 frontmatter
- */
 function hasFrontmatter(content) {
   return content.trimStart().startsWith("---");
 }
 
-/**
- * 转换单个文件
- */
-async function convertFile(filePath, relativePath) {
-  const content = await fs.readFile(filePath, "utf-8");
+function safeYamlString(str) {
+  // YAML 中冒号、#、{、} 等需要引号包裹
+  if (/[:#{\[\]'"\n]/.test(str)) {
+    return `"${str.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+  }
+  return str;
+}
 
-  // 如果已经有 frontmatter，直接复制并改后缀
+/**
+ * MDX 兼容性预处理
+ * GitHub Markdown 中很多语法在 MDX 中不兼容
+ */
+function mdxPreprocess(content) {
+  // 1. 表格中的 <数字 模式 — MDX 会把 < 当作 JSX 标签
+  //    | foo | <1 bar | → | foo | {'<1 bar '} |
+  content = content.replace(/\|([^|]*?)<([0-9][^|]*)\|/g, "|$1{'<$2'}|");
+
+  // 2. 内联 HTML 标签中的 < — 如 <kbd>、<sup> 等
+  //    暂不处理，因为合法的 HTML 标签 MDX 是支持的
+
+  // 3. 行内 { 和 } — MDX 会把 {} 当作表达式
+  //    如果不在代码块内，且包含特殊字符，需要转义
+  //    这个比较难全局处理，暂时只处理已知问题模式
+
+  // 4. 代码块语言映射
+  content = content.replace(/```(\w+)?\n/g, (match, lang) => {
+    if (!lang) return match;
+    const lower = lang.toLowerCase().trim();
+    if (!SUPPORTED_LANGS.has(lower)) {
+      // 记录映射（只记录一次）
+      if (!mdxPreprocess._langMap) mdxPreprocess._langMap = new Map();
+      if (!mdxPreprocess._langMap.has(lower)) {
+        mdxPreprocess._langMap.set(lower, true);
+        console.log(`    ⚠️  code lang "${lang}" → "text"`);
+      }
+      return "```text\n";
+    }
+    return match;
+  });
+
+  // 5. 修复 Markdown 表格中空单元格的格式问题
+  //    有些 GitHub Markdown 表格行尾有空格或不一致的 | 数量
+
+  return content;
+}
+
+async function convertFile(filePath, relativePath) {
+  let content = await fs.readFile(filePath, "utf-8");
+
+  // MDX 兼容性预处理
+  content = mdxPreprocess(content);
+
+  // 如果已经有 frontmatter，直接复制
   if (hasFrontmatter(content)) {
     return content;
   }
 
   const title = extractTitle(content) || filenameToTitle(filePath);
-  const description = ""; // 可扩展：从内容提取第一段作为描述
-
-  const frontmatter = `---\ntitle: ${title}\n${description ? `description: ${description}\n` : ""}---\n\n`;
+  const frontmatter = `---\ntitle: ${safeYamlString(title)}\n---\n\n`;
 
   return frontmatter + content;
 }
 
-/**
- * 递归处理目录
- */
 async function processDir(dir, outDir, base = "") {
   const entries = await fs.readdir(dir, { withFileTypes: true });
+  const results = { ok: 0, fail: 0, errors: [] };
 
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     const relPath = path.join(base, entry.name);
 
     if (entry.isDirectory()) {
-      await processDir(fullPath, outDir, relPath);
+      const sub = await processDir(fullPath, outDir, relPath);
+      results.ok += sub.ok;
+      results.fail += sub.fail;
+      results.errors.push(...sub.errors);
       continue;
     }
 
@@ -85,11 +136,19 @@ async function processDir(dir, outDir, base = "") {
 
     await fs.mkdir(path.dirname(outPath), { recursive: true });
 
-    const converted = await convertFile(fullPath, relPath);
-    await fs.writeFile(outPath, converted, "utf-8");
-
-    console.log(`✅  ${relPath}  →  ${outRelPath}`);
+    try {
+      const converted = await convertFile(fullPath, relPath);
+      await fs.writeFile(outPath, converted, "utf-8");
+      console.log(`✅  ${relPath}`);
+      results.ok++;
+    } catch (err) {
+      console.error(`❌  ${relPath}: ${err.message}`);
+      results.fail++;
+      results.errors.push({ file: relPath, error: err.message });
+    }
   }
+
+  return results;
 }
 
 async function main() {
@@ -100,17 +159,23 @@ async function main() {
     await fs.access(rawDir);
   } catch {
     console.error(`❌ 目录不存在: ${rawDir}`);
-    console.log(`提示：把 .md 文件放到 ${RAW_DIR}/ 目录后再运行`);
     process.exit(1);
   }
 
   console.log(`\n📂 源目录: ${rawDir}`);
   console.log(`📂 输出目录: ${outDir}\n`);
 
-  await processDir(rawDir, outDir);
+  const results = await processDir(rawDir, outDir);
 
-  console.log(`\n🎉 转换完成！`);
-  console.log(`提示：记得检查 ${OUT_DIR}/meta.json 是否需要更新文档顺序`);
+  console.log(`\n✅ 转换完成: ${results.ok} 成功, ${results.fail} 失败`);
+
+  if (results.errors.length > 0) {
+    console.log(`\n失败的文件:`);
+    for (const e of results.errors) {
+      console.log(`  - ${e.file}: ${e.error}`);
+    }
+    // 不退出进程，让 build 继续（失败的文件只是不可访问）
+  }
 }
 
 main().catch((err) => {
