@@ -114,9 +114,7 @@ export default function HomePage() {
               </div>
 
               <h1 className="text-4xl font-bold tracking-tight text-fd-foreground sm:text-5xl lg:text-[3.25rem] leading-[1.08]">
-                团队构建产品的一切
-                <br className="hidden sm:block" />
-                都在一处
+                Sevoniva
               </h1>
 
               <p className="mt-5 max-w-lg mx-auto lg:mx-0 text-lg leading-relaxed" style={{ color: "#73717E" }}>
@@ -153,7 +151,7 @@ export default function HomePage() {
               >
                 <Image
                   src="/illustrations/sevoniva-hero-pro.svg"
-                  alt="sevoniva 产品矩阵"
+                  alt="Sevoniva 产品矩阵"
                   width={1100}
                   height={800}
                   className="w-full h-auto"
@@ -266,9 +264,9 @@ export default function HomePage() {
                       {p.tag}
                     </div>
                     <h3 className="text-[28px] font-bold tracking-tight text-fd-foreground mb-3">
-                      {p.id === "crest" && "让数据，看得见"}
-                      {p.id === "memorica" && "让知识，留得住"}
-                      {p.id === "nivora" && "从提交到上线，一条流水线"}
+                      {p.id === "crest" && "Crest 数据看板"}
+                      {p.id === "memorica" && "Memorica 协同文档"}
+                      {p.id === "nivora" && "Nivora 交付流水线"}
                     </h3>
                     <p className="leading-relaxed mb-7" style={{ color: "#73717E", fontSize: "16px" }}>
                       {p.description}
@@ -358,7 +356,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== Why sevoniva ===== */}
+      {/* ===== Why Sevoniva ===== */}
       <section
         className="border-y py-24"
         style={{ backgroundColor: "#F7F8FC", borderColor: "#ECECF1" }}
@@ -368,9 +366,6 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-fd-foreground">
               特点
             </h2>
-            <p className="mt-4 text-lg" style={{ color: "#73717E" }}>
-              一套体系，省去工具之间的来回切换与拼接。
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -409,7 +404,7 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#3B82F6]/[0.06] rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
           <h2 className="relative text-3xl font-bold tracking-tight sm:text-4xl text-white mb-4">
-            把团队的工具，收进一处
+            Sevoniva
           </h2>
           <p className="relative max-w-lg mx-auto text-lg mb-10" style={{ color: "#B9B8C4" }}>
             开源，可自托管，按需扩展。
@@ -439,7 +434,7 @@ export default function HomePage() {
       <footer className="border-t">
         <div className="container mx-auto px-4 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-fd-muted-foreground">
-            © {new Date().getFullYear()} sevoniva
+            © {new Date().getFullYear()} Sevoniva
           </p>
           <div className="flex items-center gap-6">
             <a
