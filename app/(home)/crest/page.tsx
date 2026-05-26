@@ -442,14 +442,17 @@ export default function CrestPage() {
               </p>
               <div className="mt-8">
                 <Steps>
-                  <Step title="单机模式 standalone">
-                    内置 Doris 数仓。执行 install.sh 脚本完成部署。
+                  <Step>
+                    <p className="font-medium">单机模式 standalone</p>
+                    <p className="text-fd-muted-foreground">内置 Doris 数仓。执行 install.sh 脚本完成部署。</p>
                   </Step>
-                  <Step title="分布式模式 distributed">
-                    外接 MySQL 和 Doris，适合生产环境多节点部署。
+                  <Step>
+                    <p className="font-medium">分布式模式 distributed</p>
+                    <p className="text-fd-muted-foreground">外接 MySQL 和 Doris，适合生产环境多节点部署。</p>
                   </Step>
-                  <Step title="Kubernetes">
-                    提供 Helm Chart，支持滚动更新和健康探针。
+                  <Step>
+                    <p className="font-medium">Kubernetes</p>
+                    <p className="text-fd-muted-foreground">提供 Helm Chart，支持滚动更新和健康探针。</p>
                   </Step>
                 </Steps>
               </div>

@@ -809,14 +809,17 @@ export default function NivoraPage() {
               </p>
               <div className="mt-8">
                 <Steps>
-                  <Step title="Docker Compose">
-                    Server + worker + runner + PostgreSQL 本地组合。
+                  <Step>
+                    <p className="font-medium">Docker Compose</p>
+                    <p className="text-fd-muted-foreground">Server + worker + runner + PostgreSQL 本地组合。</p>
                   </Step>
-                  <Step title="Helm Chart">
-                    Production profile、rolling update、health probes。
+                  <Step>
+                    <p className="font-medium">Helm Chart</p>
+                    <p className="text-fd-muted-foreground">Production profile、rolling update、health probes。</p>
                   </Step>
-                  <Step title="Kubernetes">
-                    Native YAML manifests。
+                  <Step>
+                    <p className="font-medium">Kubernetes</p>
+                    <p className="text-fd-muted-foreground">Native YAML manifests。</p>
                   </Step>
                 </Steps>
               </div>
