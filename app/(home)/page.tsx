@@ -306,13 +306,15 @@ export default function HomePage() {
                       borderColor: "#ECECF1",
                     }}
                   >
-                    <Image
-                      src={feat.image}
-                      alt={`${p.name} 预览`}
-                      width={720}
-                      height={496}
-                      className="w-full max-w-lg h-auto drop-shadow-2xl rounded-[20px]"
-                    />
+                    <div className="w-full max-w-lg rounded-[22px] shadow-[0_20px_44px_-22px_rgba(40,40,80,0.3)] overflow-hidden">
+                      <Image
+                        src={feat.image}
+                        alt={`${p.name} 预览`}
+                        width={720}
+                        height={496}
+                        className="w-full h-auto"
+                      />
+                    </div>
                   </div>
                 </div>
               </Tab>
