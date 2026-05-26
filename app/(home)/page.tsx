@@ -248,14 +248,14 @@ export default function HomePage() {
 
         <Tabs
           items={["Crest", "Memorica", "Nivora"]}
-          className="rounded-[22px] border bg-fd-card/50 backdrop-blur-sm overflow-hidden"
+          className="rounded-[22px] border bg-fd-card/50 backdrop-blur-sm overflow-hidden [&_[data-state=active]>div]:!rounded-none [&_[data-state=active]>div]:!p-0"
         >
           {PRODUCTS.slice(0, 3).map((p) => {
             const feat = FEATURES[p.id];
             return (
               <Tab key={p.id}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                  <div className="p-8 lg:p-12 flex flex-col justify-center">
+                  <div className="p-8 lg:p-12 flex flex-col justify-center rounded-[22px]">
                     <div
                       className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-wider w-fit mb-5 uppercase"
                       style={{ backgroundColor: p.colorLight, color: p.color }}
@@ -300,10 +300,9 @@ export default function HomePage() {
                   </div>
 
                   <div
-                    className="flex items-center justify-center p-6 lg:p-10 border-t lg:border-t-0 lg:border-l"
+                    className="flex items-center justify-center p-6 lg:p-10 rounded-[22px]"
                     style={{
                       background: `linear-gradient(160deg, ${p.colorLight}, #fff)`,
-                      borderColor: "#ECECF1",
                     }}
                   >
                     <div className="w-full max-w-lg rounded-[22px] shadow-[0_20px_44px_-22px_rgba(40,40,80,0.3)] overflow-hidden">
