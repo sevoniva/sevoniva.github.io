@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" width="420" height="320"><defs>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="22" stdDeviation="34" flood-color="#1A1F44" flood-opacity="0.16"/></filter>
+<filter id="sh2" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#1A1F44" flood-opacity="0.10"/></filter>
+<linearGradient id="aBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B82F6" stop-opacity="0.32"/><stop offset="1" stop-color="#3B82F6" stop-opacity="0"/></linearGradient>
+<linearGradient id="aViolet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E62E8" stop-opacity="0.30"/><stop offset="1" stop-color="#6E62E8" stop-opacity="0"/></linearGradient>
+<linearGradient id="barB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B9CF8"/><stop offset="1" stop-color="#3B82F6"/></linearGradient>
+<radialGradient id="gB" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B82F6" stop-opacity="0.22"/><stop offset="1" stop-color="#3B82F6" stop-opacity="0"/></radialGradient>
+<radialGradient id="gV" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#6E62E8" stop-opacity="0.20"/><stop offset="1" stop-color="#6E62E8" stop-opacity="0"/></radialGradient>
+<radialGradient id="gA" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#F5A623" stop-opacity="0.18"/><stop offset="1" stop-color="#F5A623" stop-opacity="0"/></radialGradient>
+<radialGradient id="gT" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#1FB6A6" stop-opacity="0.18"/><stop offset="1" stop-color="#1FB6A6" stop-opacity="0"/></radialGradient>
+</defs><rect width="420" height="320" fill="none"/><g filter="url(#sh2)"><path d="M210 60 L320 96 V190 C320 250 268 286 210 304 C152 286 100 250 100 190 V96 Z" fill="#fff"/></g><path d="M210 60 L320 96 V190 C320 250 268 286 210 304 C152 286 100 250 100 190 V96 Z" fill="#1FB6A6" opacity="0.10"/><path d="M210 60 L320 96 V190 C320 250 268 286 210 304 C152 286 100 250 100 190 V96 Z" fill="none" stroke="#1FB6A6" stroke-width="4"/><path d="M176 182 l24 24 l46 -52" fill="none" stroke="#1FB6A6" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>
