@@ -33,27 +33,40 @@ cd installer
 安装前先打开 `install.conf`，至少确认以下配置：
 
 ```bash
-DE_BASE=/opt
-DE_PORT=8100
-DE_APP_IMAGE=ghcr.io/sevoniva/crest:v1.3.0
-DE_MYSQL_IMAGE=mysql:8.4.5
-DE_ORIGIN_LIST=http://localhost:8100
+CREST_BASE=/opt
+CREST_PORT=8100
+CREST_CONTEXT_PATH=
+CREST_LOGIN_TIMEOUT=960
+CREST_APP_IMAGE=ghcr.io/sevoniva/crest:v1.5.0
+CREST_MYSQL_IMAGE=mysql:8.4.5
+CREST_ORIGIN_LIST=http://localhost:8100
+CREST_CRYPTO_MODE=standard
 ```
 
 生产环境建议显式配置：
 
 ```bash
-DE_PORT=8100
-DE_ORIGIN_LIST=https://bi.example.com
-DE_INITIAL_PASSWORD='替换为高强度初始密码'
-DE_MYSQL_PASSWORD='替换为高强度数据库密码'
-DE_AES_KEY='32位加密Key'
-DE_AES_IV='16位加密IV'
+CREST_PORT=8100
+CREST_ORIGIN_LIST=https://bi.example.com
+CREST_INITIAL_PASSWORD='替换为高强度初始密码'
+CREST_DB_PASSWORD='替换为高强度数据库密码'
+CREST_AES_KEY='32位加密Key'
+CREST_AES_IV='16位加密IV'
+CREST_CRYPTO_MODE=standard
 ```
 
 如果留空，安装脚本会自动生成密码和加密参数，并在安装日志中输出。
 
 生产环境不建议完全依赖临时输出。管理员应在安装前生成高强度密码和 AES 参数，并把它们保存到企业密码库或受控台账中。后续迁移、恢复和升级时，这些值必须能找到。
+
+需要启用国密时，在首次安装前明确改为：
+
+```bash
+CREST_CRYPTO_MODE=sm-suite
+CREST_SM4_KEY='0123456789abcdef'
+```
+
+`sm-suite` 模式用于需要 SM2、SM3、SM4 的环境。启用后，用户创建数据源、数据集、仪表盘和数据大屏的方式不变；运维侧需要把 `CREST_SM4_KEY` 和 AES Key、AES IV 一起纳入密钥管理，升级和恢复时不要更换。
 
 ## 执行安装
 
@@ -70,7 +83,7 @@ bash install.sh
   </Step>
   <Step>
     ### 初始化目录
-    创建 `/opt/crest` 或你在 `DE_BASE` 中指定的运行目录。
+    创建 `/opt/crest` 或你在 `CREST_BASE` 中指定的运行目录。
   </Step>
   <Step>
     ### 准备容器
@@ -78,7 +91,7 @@ bash install.sh
   </Step>
   <Step>
     ### 生成运行配置
-    写入数据库连接、AES 参数、初始密码、允许来源等配置。
+    写入数据库连接、加密模式、AES 参数、国密 SM4 Key、初始密码、允许来源等配置。
   </Step>
   <Step>
     ### 启动服务

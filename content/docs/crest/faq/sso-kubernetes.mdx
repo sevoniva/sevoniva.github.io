@@ -60,6 +60,7 @@ kubectl logs <pod-name> -n crest --tail=200
 | --- | --- | --- |
 | ImagePullBackOff | 镜像地址、凭据或网络问题 | 检查镜像仓库和 pull secret |
 | CrashLoopBackOff | 应用启动异常 | 查看容器日志和配置 |
+| 启动时报加密模式或密钥错误 | `CREST_CRYPTO_MODE` 或 `CREST_SM4_KEY` 配置不符合要求 | 按部署文档检查 `standard` / `sm-suite` 和 SM4 Key |
 | Pending | 资源不足或 PVC 未绑定 | 检查节点资源、StorageClass |
 | Running 但无法访问 | Service 或 Ingress 问题 | 检查端口、域名、路由 |
 | 数据库连接失败 | Secret、网络策略或数据库白名单问题 | 检查连接参数和网络 |

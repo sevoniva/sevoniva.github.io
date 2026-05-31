@@ -85,13 +85,37 @@ kubectl -n crest-external rollout status deployment/crest --timeout=300s
 | `CREST_DB_USERNAME` | 元数据库账号 |
 | `CREST_DB_PASSWORD` | 元数据库密码 |
 | `MYSQL_ROOT_PASSWORD` | 内置 MySQL 模式需要 |
+| `CREST_CRYPTO_MODE` | 加密模式，默认 `standard`；需要国密时设为 `sm-suite` |
 | `CREST_AES_KEY` | 32 位加密 Key |
 | `CREST_AES_IV` | 16 位加密 IV |
+| `CREST_SM4_KEY` | 国密 `sm-suite` 模式使用的 SM4 Key |
 | `CREST_INITIAL_PASSWORD` | 管理员初始密码 |
 
 不要把生产密码提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。
 
 如果使用 GitOps 管理清单，建议只提交 Secret 模板或加密后的 Secret。明文生产密码一旦进入 Git 历史，后续删除文件也不能真正消除泄露风险。
+
+## 启用国密模式
+
+Kubernetes 部署同样支持 Crest v1.5.0 的国密能力。需要 SM2、SM3、SM4 时，在所选 overlay 的 `kustomization.yaml` 中设置：
+
+```yaml
+CREST_CRYPTO_MODE=sm-suite
+CREST_SM4_KEY=<16-character-sm4-key>
+```
+
+使用内置 MySQL 时修改 `deploy/kubernetes/internal-mysql/kustomization.yaml`；使用外部 MySQL 时修改 `deploy/kubernetes/external-mysql/kustomization.yaml`。修改后重新应用对应 overlay：
+
+```bash
+kubectl apply -k deploy/kubernetes/external-mysql
+kubectl -n crest-external rollout status deployment/crest --timeout=300s
+```
+
+国密模式只改变后端加密、签名和密钥保存方式，不改变用户页面操作。上线验收仍按登录、工作台、数据源、数据集、仪表盘、大屏、分享、导出和审计日志逐项验证。
+
+<Callout type="warning" title="不要更换 SM4 Key">
+  `CREST_CRYPTO_MODE=sm-suite` 启用后，SM2 私钥和敏感配置会依赖 `CREST_SM4_KEY` 解密。升级、重启、扩容和恢复时必须使用同一个 SM4 Key。
+</Callout>
 
 ## 常用排查命令
 

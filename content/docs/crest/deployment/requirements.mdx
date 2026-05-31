@@ -101,11 +101,28 @@ CREATE DATABASE crest
 | --- | --- |
 | 管理员初始密码 | 用于首次登录，登录后应立即修改 |
 | MySQL 密码 | 用于 Crest 连接元数据库 |
+| 加密模式 | `CREST_CRYPTO_MODE`，默认 `standard`；需要 SM2、SM3、SM4 时设为 `sm-suite` |
 | AES Key | 用于加密保存敏感配置 |
 | AES IV | 与 AES Key 配套使用 |
+| SM4 Key | `sm-suite` 国密模式使用，必须作为生产密钥保存 |
 
-<Callout type="warning" title="不要随意修改 AES Key 和 AES IV">
-  已有环境升级或迁移时，AES Key 和 AES IV 必须保持一致。修改后，已保存的数据源密码、SSO Client Secret 等密文可能无法解密。
+<Callout type="warning" title="不要随意修改加密密钥">
+  已有环境升级或迁移时，AES Key、AES IV 和国密模式下的 SM4 Key 必须保持一致。修改后，已保存的数据源密码、SSO Client Secret 等密文可能无法解密。
+</Callout>
+
+## 国密模式说明
+
+Crest v1.5.0 支持两种加密模式：
+
+| 模式 | 适用场景 | 说明 |
+| --- | --- | --- |
+| `standard` | 默认部署、常规内网和私有云环境 | 使用默认加密链路，安装脚本可自动生成 AES Key 和 AES IV |
+| `sm-suite` | 需要 SM2、SM3、SM4 的项目 | 登录传输使用 SM2，密码使用 SM3 迭代哈希，敏感配置使用带随机 IV 和 HMAC-SM3 完整性校验的 SM4 密文保存 |
+
+启用国密模式不会改变业务用户的操作方式。用户仍按相同路径创建数据源、数据集、仪表盘、大屏、分享和导出；管理员仍在系统管理中配置账号、角色、权限、SSO 和审计。需要变化的是部署前必须明确 `CREST_CRYPTO_MODE=sm-suite`，并安全保存 `CREST_SM4_KEY`。
+
+<Callout type="info" title="生产环境建议">
+  `sm-suite` 模式下如果 `CREST_SM4_KEY` 为空，安装脚本可以生成 16 位 Key。但正式环境建议在安装前由运维或密钥系统生成并记录，避免只依赖终端输出。
 </Callout>
 
 ## 安装前检查命令
@@ -142,8 +159,8 @@ ss -lntp | grep 8100 || true
 | 访问地址 | 已确认最终端口或域名，反向代理方案明确 |
 | 运行环境 | Docker、Compose 或 Kubernetes 集群已验证 |
 | 数据库 | 内置或外部 MySQL 方案已确定，生产库已备份规划 |
-| 密钥密码 | 初始密码、数据库密码、AES Key、AES IV 已生成并安全保存 |
+| 密钥密码 | 初始密码、数据库密码、加密模式、AES Key、AES IV、SM4 Key 已生成并安全保存 |
 | 网络 | 用户访问、数据库访问、SSO 回调、镜像拉取都已确认 |
 | 运维 | 日志、备份、升级窗口、应急联系人已明确 |
 
-满足这些条件后再安装，后续改动会少很多。尤其是 AES Key、AES IV、域名和数据库方案，部署后再改的成本明显更高。
+满足这些条件后再安装，后续改动会少很多。尤其是加密模式、AES Key、AES IV、SM4 Key、域名和数据库方案，部署后再改的成本明显更高。

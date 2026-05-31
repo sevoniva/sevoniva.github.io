@@ -73,6 +73,20 @@ description: Crest 服务访问、初始密码、登录失败、端口和 HTTPS 
 - 检查 Nginx、Ingress 或负载均衡日志。
 - 清理浏览器缓存后重试。
 
+## 启用国密后还能按原方式使用吗
+
+可以。`CREST_CRYPTO_MODE=sm-suite` 是部署和安全配置，不改变业务页面入口。用户仍然按原流程登录、创建数据源、创建数据集、制作仪表盘、制作数据大屏、分享页面和提交导出。
+
+需要重点检查的是运维配置：
+
+| 配置 | 要求 |
+| --- | --- |
+| `CREST_CRYPTO_MODE` | 只能是 `standard` 或 `sm-suite` |
+| `CREST_SM4_KEY` | `sm-suite` 模式下使用，生产环境必须保存 |
+| `CREST_AES_KEY` / `CREST_AES_IV` | 升级和恢复时保持不变 |
+
+如果启用国密后服务启动失败，先看应用日志中是否有加密模式或密钥长度相关错误。不要通过更换密钥反复尝试，已有环境更换密钥可能导致历史敏感配置无法解密。
+
 ## 登录后工作台显示异常
 
 ![工作台](/images/docs/crest/screenshots/workspace.png)
