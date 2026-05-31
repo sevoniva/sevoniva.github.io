@@ -11,6 +11,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         SearchDialog: CrestSearchDialog,
         links: [
           ["快速开始", "/docs/crest/quick-start"],
+          ["版本发布", "/docs/crest/releases"],
           ["安装部署", "/docs/crest/deployment"],
           ["用户指南", "/docs/crest/user-guide"],
           ["管理员指南", "/docs/crest/admin-guide"],

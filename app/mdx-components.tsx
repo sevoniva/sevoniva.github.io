@@ -1,4 +1,5 @@
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import CrestReleases from "@/components/CrestReleases";
 import Mermaid from "@/components/Mermaid";
 import type { ImageProps } from "fumadocs-core/framework";
 import type { ComponentProps } from "react";
@@ -43,6 +44,7 @@ function DocsImage({
 export function getMDXComponents() {
   return {
     ...defaultMdxComponents,
+    CrestReleases,
     Mermaid,
     // Accordion
     Accordions,

@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev --webpack",
     "sync-docs": "node scripts/sync-github-docs.mjs",
+    "sync-crest-releases": "node scripts/sync-crest-releases.mjs",
     "convert-md": "node scripts/convert-md.mjs",
-    "build": "pnpm sync-docs && pnpm convert-md && next build",
+    "build": "pnpm sync-docs && pnpm sync-crest-releases && pnpm convert-md && next build",
     "start": "next start",
+    "test:releases": "node --test tests/crest-release-utils.test.mjs",
     "lint": "eslint"
   },
   "dependencies": {

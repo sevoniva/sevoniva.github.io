@@ -5,6 +5,7 @@
   "pages": [
     "index",
     "quick-start",
+    "releases",
     "deployment",
     "configuration",
     "user-guide",
