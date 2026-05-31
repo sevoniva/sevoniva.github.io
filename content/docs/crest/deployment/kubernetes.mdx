@@ -5,6 +5,12 @@ description: 使用 deploy/kubernetes 下的清单部署 Crest，支持内置 My
 
 Crest 提供 Kustomize 清单，适合部署到 Kubernetes 集群。当前支持内置 MySQL 和外部 MySQL 两种方式。
 
+Kubernetes 部署更适合已有集群和运维体系的团队。它的重点不是把 Pod 拉起来，而是把命名空间、Secret、PVC、Service、Ingress、数据库、日志和备份都纳入统一管理。首次验证可以用内置 MySQL，生产环境建议优先评估外部 MySQL。
+
+集群部署完成后，仍然要回到页面验证，而不是只看 Pod 状态。下面的工作台截图可作为第一轮页面验收参考：能登录、能加载菜单、能显示资源统计，才说明前后端和元数据库基本连通。
+
+![工作台](/images/docs/crest/screenshots/workspace.png)
+
 ## 目录结构
 
 ```text
@@ -26,6 +32,8 @@ deploy/kubernetes
     ├── kustomization.yaml
     └── namespace.yaml
 ```
+
+目录按“公共基础配置”和“两种数据库模式”拆分。`base` 放 Crest 应用本身的 Deployment、Service、PVC 和配置；`internal-mysql` 额外部署 MySQL；`external-mysql` 只部署 Crest，并通过 Secret 连接外部数据库。修改前先确认自己要改的是哪一种模式，不要同时改两个 overlay。
 
 ## 内置 MySQL 模式
 
@@ -53,6 +61,8 @@ http://127.0.0.1:18100/index.html
 
 内置 MySQL 模式适合验证部署链路，不建议直接作为正式生产方案。使用前要确认 PVC 已绑定，MySQL Pod 重启后数据仍然存在。
 
+验证内置 MySQL 时建议完成三件事：创建一个测试仪表盘、重启 MySQL Pod、再次登录确认资源仍存在。只看到 Pod Running 不能证明数据持久化可靠。
+
 ## 外部 MySQL 模式
 
 适合生产环境。先准备外部数据库，再替换 Secret 中的连接信息：
@@ -66,6 +76,8 @@ kubectl -n crest-external rollout status deployment/crest --timeout=300s
 
 外部 MySQL 模式上线前，要先由数据库负责人确认数据库、账号、备份和监控都已就绪。Crest Pod 启动失败时，优先检查 Secret、网络策略、数据库白名单和 DNS。
 
+外部 MySQL 模式建议把数据库连接信息放入集群 Secret 或企业密钥系统，不要写进普通 ConfigMap。上线前还要确认集群节点到数据库地址的网络连通性，特别是跨 VPC、专线、白名单和 DNS 解析。
+
 ## 必须替换的 Secret
 
 | 变量 | 说明 |
@@ -78,6 +90,8 @@ kubectl -n crest-external rollout status deployment/crest --timeout=300s
 | `CREST_INITIAL_PASSWORD` | 管理员初始密码 |
 
 不要把生产密码提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。
+
+如果使用 GitOps 管理清单，建议只提交 Secret 模板或加密后的 Secret。明文生产密码一旦进入 Git 历史，后续删除文件也不能真正消除泄露风险。
 
 ## 常用排查命令
 
@@ -110,3 +124,38 @@ kubectl get pvc -n crest-internal
 | 日志 | 没有数据库连接失败和 Flyway 迁移失败 |
 
 Kubernetes 环境中，备份、日志和监控通常由平台统一提供。上线前应确认 Crest 的 PVC、数据库和日志都已纳入平台运维范围。
+
+## 推荐发布流程
+
+<Steps>
+  <Step>
+    ### 准备命名空间和密钥
+    创建专用命名空间，替换所有占位密码和密钥，确认 Secret 来源可靠。
+  </Step>
+  <Step>
+    ### 部署到测试集群
+    先在测试集群执行 `kubectl apply -k`，确认 Pod、Service、PVC 和日志正常。
+  </Step>
+  <Step>
+    ### 完成页面验证
+    登录 Crest，创建一个数据源、一个数据集和一个简单仪表盘，确认数据库迁移和文件目录正常。
+  </Step>
+  <Step>
+    ### 配置 Ingress
+    绑定正式域名和 HTTPS 证书，检查反向代理头和访问路径。
+  </Step>
+  <Step>
+    ### 切换生产流量
+    在变更窗口发布，观察应用日志、Pod 重启、数据库连接和用户登录反馈。
+  </Step>
+</Steps>
+
+## 常见生产调整
+
+| 调整项 | 建议 |
+| --- | --- |
+| 副本数 | 先确认应用和存储是否支持多副本，再调整 Deployment |
+| 资源限制 | 按查询量、导出量和并发访问设置 requests 与 limits |
+| 日志采集 | 接入集群日志系统，保留应用启动、登录、导出和异常日志 |
+| Ingress | 固定域名、HTTPS、超时时间和上传大小限制 |
+| 备份 | 外部 MySQL 由数据库平台备份，PVC 和上传目录也要纳入备份 |
