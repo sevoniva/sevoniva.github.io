@@ -91,7 +91,7 @@ kubectl -n crest-external rollout status deployment/crest --timeout=300s
 | `CREST_SM4_KEY` | 国密 `sm-suite` 模式使用的 SM4 Key |
 | `CREST_INITIAL_PASSWORD` | 管理员初始密码 |
 
-不要把生产密码提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。
+生产密码不得提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。
 
 如果使用 GitOps 管理清单，建议只提交 Secret 模板或加密后的 Secret。明文生产密码一旦进入 Git 历史，后续删除文件也不能真正消除泄露风险。
 
