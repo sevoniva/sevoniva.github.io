@@ -121,4 +121,5 @@ test("GitHub Pages build runs the release snapshot sync", () => {
   assert.match(workflow, /run:\s+pnpm build/);
   assert.doesNotMatch(workflow, /run:\s+pnpm next build/);
   assert.match(workflow, /GITHUB_TOKEN:\s+\$\{\{\s*github\.token\s*\}\}/);
+  assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s+true/);
 });
