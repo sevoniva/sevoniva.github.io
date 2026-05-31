@@ -1,0 +1,14 @@
+{
+  "title": "安装部署",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "requirements",
+    "single-node",
+    "offline",
+    "kubernetes",
+    "external-mysql",
+    "service-management",
+    "post-check"
+  ]
+}

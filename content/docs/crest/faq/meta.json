@@ -1,0 +1,11 @@
+{
+  "title": "常见问题",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "install-login",
+    "permissions",
+    "data-visualization",
+    "sso-kubernetes"
+  ]
+}

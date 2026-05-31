@@ -1,0 +1,99 @@
+---
+title: 离线安装
+description: 制作 Crest 离线安装包，并在不能访问外网的服务器上完成部署。
+---
+
+离线安装适合生产内网、政企内网或无法直接访问镜像仓库的服务器。核心思路是在有网络的机器上制作离线包，再把完整包上传到目标服务器安装。
+
+## 制作离线包
+
+在可访问镜像仓库的机器上执行：
+
+```bash
+cd installer
+bash make-offline-package.sh v1.3.0 linux-amd64
+```
+
+ARM 服务器使用：
+
+```bash
+bash make-offline-package.sh v1.3.0 linux-arm64
+```
+
+生成文件示例：
+
+```text
+crest-offline-v1.3.0-linux-amd64.tar.gz
+crest-offline-v1.3.0-linux-arm64.tar.gz
+```
+
+制作完成后建议生成校验值：
+
+```bash
+sha256sum crest-offline-v1.3.0-linux-amd64.tar.gz
+```
+
+把包名、版本、架构、生成时间和校验值一起记录。离线环境排查问题时，先确认拿到的是正确安装包。
+
+## 离线包内容
+
+离线包通常包含：
+
+| 内容 | 说明 |
+| --- | --- |
+| 安装脚本 | `install.sh`、`uninstall.sh` |
+| 配置模板 | `install.conf`、后端配置模板 |
+| Docker Compose | 应用和 MySQL 编排文件 |
+| 镜像归档 | Crest 应用镜像和 MySQL 镜像 |
+| 说明文档 | 安装、升级和默认账号说明 |
+
+离线包是发布物，不建议提交到源码仓库。
+
+## 上传到目标服务器
+
+```bash
+scp crest-offline-v1.3.0-linux-amd64.tar.gz user@server:/opt/packages/
+```
+
+在目标服务器解压：
+
+```bash
+cd /opt/packages
+tar -zxf crest-offline-v1.3.0-linux-amd64.tar.gz
+cd crest-offline-v1.3.0-linux-amd64
+```
+
+解压后先检查目录内容是否完整，尤其是安装脚本、镜像归档和配置模板。文件缺失时不要继续安装，先重新传包。
+
+## 修改配置并安装
+
+编辑 `install.conf`：
+
+```bash
+DE_PORT=8100
+DE_ORIGIN_LIST=https://bi.example.com
+DE_INITIAL_PASSWORD='替换为高强度初始密码'
+```
+
+执行安装：
+
+```bash
+bash install.sh
+```
+
+安装脚本会优先加载离线包中的镜像，不再依赖外部镜像仓库。
+
+安装完成后按部署后检查章节执行验收。离线安装最常见的问题是架构不匹配、镜像包不完整、Docker 版本过低、端口占用和磁盘空间不足。
+
+## 离线安装检查
+
+1. 离线包架构是否与服务器一致。
+2. 镜像归档是否完整。
+3. Docker 和 Docker Compose 是否可用。
+4. 端口是否未被占用。
+5. 安装完成后是否能登录。
+6. 安装日志是否保存。
+
+<Callout type="info" title="建议">
+  离线包进入生产环境前，建议记录包名、版本、生成时间、校验值和使用的镜像版本。
+</Callout>

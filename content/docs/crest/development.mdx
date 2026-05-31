@@ -1,0 +1,141 @@
+---
+title: 开发指南
+description: Crest 源码结构、本地开发、前端后端启动、构建、菜单页面、接口、数据库迁移和提交检查说明。
+---
+
+本章面向需要阅读源码、扩展功能、构建镜像或参与项目维护的开发人员。
+
+## 源码结构
+
+| 路径 | 说明 |
+| --- | --- |
+| `core/core-backend` | Spring Boot 后端服务，包含接口、业务实现、Flyway 迁移和最终 JAR 打包入口 |
+| `core/core-frontend` | Vue 3.3、Vite、TypeScript、Element Plus、Pinia 前端工程 |
+| `sdk/api` | 对内 API、DTO、VO 和接口契约 |
+| `sdk/common` | 认证、通用模型、工具类、异常处理和 Spring 配置 |
+| `sdk/extensions/extensions-datasource` | JDBC 数据源扩展和方言能力 |
+| `drivers` | 随仓库维护的 JDBC 驱动 |
+| `installer` | 单机安装脚本、Docker Compose 模板、控制脚本和离线包制作脚本 |
+| `deploy/kubernetes` | Kubernetes 部署清单 |
+| `docs` | 项目说明、开发说明和专题文档 |
+
+## 工具链
+
+| 工具 | 建议版本 |
+| --- | --- |
+| JDK | 21 |
+| Maven | 3.9 或兼容版本 |
+| Node.js | 22 |
+| pnpm | 11 |
+| MySQL | 8.0 或兼容版本 |
+| Docker | 20.10+ |
+
+## 后端本地启动
+
+先准备 MySQL，并设置环境变量：
+
+```bash
+export CREST_DB_HOST=127.0.0.1
+export CREST_DB_PORT=3306
+export CREST_DB_NAME=crest
+export CREST_DB_USERNAME=root
+export CREST_DB_PASSWORD='<mysql-password>'
+export CREST_AES_KEY='<32-character-aes-key>'
+export CREST_AES_IV='<16-character-aes-iv>'
+export CREST_INITIAL_PASSWORD='<admin-initial-password>'
+./run.sh start
+```
+
+后端启动时会通过 Flyway 执行数据库迁移。迁移脚本应保持环境无关，不要写入个人账号、内网地址、真实密码或临时资源。
+
+## 前端本地启动
+
+```bash
+cd core/core-frontend
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+前端页面主要包括工作台、数据源、数据集、数据血缘、仪表盘、数据大屏、分享、导出中心、修改密码和系统管理。
+
+## 构建命令
+
+前端构建：
+
+```bash
+cd core/core-frontend
+pnpm run build:base
+```
+
+前端轻量检查：
+
+```bash
+cd core/core-frontend
+pnpm run build:lite:check
+```
+
+后端打包：
+
+```bash
+mvn -s .mvn/settings.xml -pl :core-backend -am clean package -Pstandalone -DskipTests -Dmaven.test.skip=true
+```
+
+本地镜像：
+
+```bash
+docker build -t ghcr.io/sevoniva/crest:local .
+```
+
+## 菜单与页面
+
+Crest 的主菜单由后端 `core_menu` 表驱动，前端根据后端返回的菜单生成路由。新增公开菜单时，通常需要：
+
+1. 新增前端页面组件。
+2. 在数据库迁移中新增菜单记录。
+3. 确认菜单权限默认值。
+4. 更新角色权限和资源权限逻辑。
+5. 补充用户文档和截图。
+
+不要只在前端写死菜单。否则权限、路由、刷新和后续升级会出现不一致。
+
+## 接口开发
+
+新增接口时建议遵循：
+
+- 请求参数使用明确的 DTO。
+- 返回给前端的错误信息可理解，不泄露内部堆栈、密码和完整连接串。
+- 涉及用户、角色、资源和数据源的接口必须检查权限。
+- 导出、下载、分享和 SSO 等外部入口要记录审计日志。
+
+## 数据库迁移
+
+迁移脚本位于后端资源目录下的 Flyway 目录。原则：
+
+1. 脚本按版本递增。
+2. 初始化数据不能包含生产敏感信息。
+3. 变更字段类型前评估历史数据。
+4. 删除表、字段或菜单前提供兼容方案。
+5. 演示数据和产品边界要同步更新文档。
+
+## 扩展开发建议
+
+常见扩展方向：
+
+| 方向 | 建议 |
+| --- | --- |
+| 新增数据源类型 | 优先复用现有 JDBC 数据源扩展机制 |
+| 新增图表 | 先确认图表配置、渲染、导出和大屏兼容 |
+| 新增系统菜单 | 同步处理菜单权限、角色默认值和文档 |
+| 接入统一认证 | 优先扩展现有 SSO 配置 |
+| 调整品牌 | 修改站点设置、Logo、登录页和文档资源 |
+
+## 提交前检查
+
+提交代码前至少确认：
+
+1. 没有提交 `.env`、数据库密码、Token、证书或生产导出文件。
+2. 前端构建或轻量检查通过。
+3. 后端涉及模块可编译。
+4. 数据库迁移能在空库执行。
+5. 新增功能有对应文档或说明。
+6. 公开仓库中没有不可分发依赖和授权不清的资源。

@@ -2,16 +2,15 @@ import {
   ArrowRight,
   Code2,
   ExternalLink,
-  FileText,
   FolderTree,
   History,
-  Layers,
   Lock,
   Sparkles,
   Users,
   Zap,
 } from "lucide-react";
 import Mermaid from "@/components/Mermaid";
+import Image from "next/image";
 
 export const metadata = {
   title: "Memorica — 实时协作文档编辑器",
@@ -98,9 +97,11 @@ export default function MemoricaPage() {
               </div>
             </div>
             <div className="bg-fd-background border-t lg:border-t-0 lg:border-l">
-              <img
+              <Image
                 src="/images/memorica/homepage.png"
                 alt="Memorica 文档库"
+                width={1440}
+                height={900}
                 className="w-full h-auto"
               />
             </div>
@@ -112,9 +113,11 @@ export default function MemoricaPage() {
         <div className="rounded-2xl border bg-fd-card/50 backdrop-blur-sm overflow-hidden">
           <div className="grid gap-0 lg:grid-cols-2">
             <div className="bg-fd-background border-b lg:border-b-0 lg:border-r">
-              <img
+              <Image
                 src="/images/memorica/editor.png"
                 alt="Memorica 编辑器"
+                width={1440}
+                height={900}
                 className="w-full h-auto"
               />
             </div>
@@ -154,9 +157,11 @@ export default function MemoricaPage() {
               </div>
             </div>
             <div className="bg-fd-background border-t lg:border-t-0 lg:border-l">
-              <img
+              <Image
                 src="/images/memorica/ai-assistant.png"
                 alt="Memorica AI 助手"
+                width={1440}
+                height={900}
                 className="w-full h-auto"
               />
             </div>

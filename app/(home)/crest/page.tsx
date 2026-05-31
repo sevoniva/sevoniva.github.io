@@ -2,7 +2,6 @@ import {
   ArrowRight,
   Code2,
   Database,
-  ExternalLink,
   GitBranch,
   Layers,
   Monitor,
@@ -12,6 +11,8 @@ import {
 import Mermaid from "@/components/Mermaid";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Steps, Step } from "fumadocs-ui/components/steps";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata = {
   title: "Crest — 开源 BI 工具",
@@ -30,15 +31,20 @@ export default function CrestPage() {
         </div>
 
         <div className="container mx-auto px-4 pt-28 pb-20 text-center">
-          <img
+          <Image
             src="/images/crest/crest-logo-horizontal.svg"
             alt="Crest"
-            className="h-10 mx-auto dark:hidden"
+            width={243}
+            height={52}
+            priority
+            className="h-10 w-auto mx-auto dark:hidden"
           />
-          <img
+          <Image
             src="/images/crest/crest-logo-horizontal-dark.svg"
             alt="Crest"
-            className="h-10 mx-auto hidden dark:block"
+            width={243}
+            height={52}
+            className="h-10 w-auto mx-auto hidden dark:block"
           />
 
           <p className="mt-5 text-2xl font-bold tracking-tight text-fd-foreground">
@@ -58,15 +64,13 @@ export default function CrestPage() {
               <Code2 className="h-4 w-4" />
               GitHub
             </a>
-            <a
-              href="https://github.com/sevoniva/Crest/blob/main/README.md"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href="/docs/crest"
               className="inline-flex h-11 items-center gap-2 rounded-xl border px-6 text-sm font-medium text-fd-foreground transition-all hover:bg-fd-accent"
             >
               文档
-              <ExternalLink className="h-4 w-4" />
-            </a>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -510,10 +514,12 @@ export default function CrestPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#3B82F6]/[0.04] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#3B82F6]/[0.04] rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-          <img
+          <Image
             src="/images/crest/crest-mark.svg"
             alt=""
-            className="h-10 mx-auto mb-5"
+            width={57}
+            height={52}
+            className="h-10 w-auto mx-auto mb-5"
           />
           <h2 className="relative text-2xl font-bold tracking-tight text-fd-foreground">
             数据登顶，决策有据
@@ -531,15 +537,13 @@ export default function CrestPage() {
               <Code2 className="h-4 w-4" />
               查看源码
             </a>
-            <a
-              href="https://github.com/sevoniva/Crest/blob/main/README.md"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href="/docs/crest"
               className="inline-flex h-11 items-center gap-2 rounded-xl border px-6 text-sm font-medium text-fd-foreground transition-all hover:bg-fd-accent"
             >
               文档
-              <ExternalLink className="h-4 w-4" />
-            </a>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -548,9 +552,11 @@ export default function CrestPage() {
       <footer className="border-t mt-auto">
         <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img
+            <Image
               src="/images/crest/crest-mark.svg"
               alt=""
+              width={57}
+              height={52}
               className="h-4 w-auto"
             />
             <span className="text-sm text-fd-muted-foreground">

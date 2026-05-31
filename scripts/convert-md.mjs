@@ -96,7 +96,7 @@ function mdxPreprocess(content) {
   return content;
 }
 
-async function convertFile(filePath, relativePath) {
+async function convertFile(filePath) {
   let content = await fs.readFile(filePath, "utf-8");
 
   // MDX 兼容性预处理
@@ -137,7 +137,7 @@ async function processDir(dir, outDir, base = "") {
     await fs.mkdir(path.dirname(outPath), { recursive: true });
 
     try {
-      const converted = await convertFile(fullPath, relPath);
+      const converted = await convertFile(fullPath);
       await fs.writeFile(outPath, converted, "utf-8");
       console.log(`✅  ${relPath}`);
       results.ok++;

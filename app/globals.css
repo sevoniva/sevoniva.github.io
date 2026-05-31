@@ -13,17 +13,421 @@
 
 /* ─── Mermaid Diagram Theme Variables ─── */
 :root {
-  --mermaid-node-fill: #EDE9FE;
-  --mermaid-node-stroke: #6E62E8;
+  --crest-blue: #3B82F6;
+  --crest-blue-strong: #2563EB;
+  --crest-cyan: #06B6D4;
+  --crest-mint: #1FB6A6;
+  --crest-amber: #FFC53D;
+  --crest-red: #FB5A5A;
+  --mermaid-node-fill: #EAF3FF;
+  --mermaid-node-stroke: #3B82F6;
   --mermaid-text-color: #1E1E24;
-  --mermaid-edge-color: #8B80F0;
-  --mermaid-cluster-fill: #F5F3FF;
-  --mermaid-cluster-stroke: #6E62E8;
-  --mermaid-cluster-text: #6E62E8;
-  --mermaid-note-fill: #F5F3FF;
-  --mermaid-note-stroke: #6E62E8;
-  --mermaid-actor-fill: #EDE9FE;
-  --mermaid-actor-stroke: #6E62E8;
+  --mermaid-edge-color: #3B82F6;
+  --mermaid-cluster-fill: #F7FAFF;
+  --mermaid-cluster-stroke: #3B82F6;
+  --mermaid-cluster-text: #2563EB;
+  --mermaid-note-fill: #FFFBEB;
+  --mermaid-note-stroke: #FFC53D;
+  --mermaid-actor-fill: #EAF3FF;
+  --mermaid-actor-stroke: #3B82F6;
+}
+
+.crest-docs-theme {
+  --color-fd-primary: var(--crest-blue);
+  --color-fd-primary-foreground: #FFFFFF;
+  --color-fd-info: var(--crest-blue);
+  --color-fd-warning: var(--crest-amber);
+  --color-fd-success: var(--crest-mint);
+  --color-fd-error: var(--crest-red);
+  --color-fd-idea: var(--crest-cyan);
+}
+
+.crest-docs-theme #nd-docs-layout {
+  background: #F7FAFF;
+}
+
+.crest-docs-theme #nd-subnav,
+.crest-docs-theme #nd-sidebar {
+  border-color: rgb(59 130 246 / 0.16);
+  background: rgb(255 255 255 / 0.96);
+  box-shadow: 18px 0 45px rgb(15 23 42 / 0.04);
+}
+
+.crest-docs-theme #nd-sidebar::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 3px;
+  content: "";
+  background: var(--crest-blue);
+}
+
+.crest-docs-theme [data-search-full] {
+  border-color: rgb(59 130 246 / 0.18);
+  background: rgb(255 255 255 / 0.78);
+  box-shadow: 0 8px 24px rgb(59 130 246 / 0.08);
+}
+
+.crest-docs-theme #nd-sidebar a[data-active="true"],
+.crest-docs-theme #nd-sidebar a[data-active="true"]:hover {
+  color: var(--crest-blue-strong);
+  background: #EAF3FF;
+  box-shadow: inset 3px 0 0 var(--crest-blue), 0 8px 20px rgb(59 130 246 / 0.08);
+}
+
+.crest-docs-theme #nd-sidebar button[data-state="open"] {
+  color: #0F172A;
+  background: rgb(59 130 246 / 0.07);
+}
+
+.crest-docs-theme #nd-page {
+  max-width: 960px;
+}
+
+.crest-docs-theme #nd-toc {
+  padding-inline-end: 1.25rem;
+  color: #64748B;
+}
+
+.crest-docs-theme #toc-title,
+.crest-docs-theme #nd-toc h3 {
+  width: fit-content;
+  margin-bottom: 0.85rem;
+  padding: 0.42rem 0.62rem;
+  border: 1px solid rgb(59 130 246 / 0.12);
+  border-radius: 999px;
+  color: #2563EB;
+  background: #F2F7FF;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgb(59 130 246 / 0.07);
+}
+
+.crest-docs-theme #toc-title svg,
+.crest-docs-theme #nd-toc h3 svg {
+  color: var(--crest-blue);
+}
+
+.crest-docs-theme #nd-toc a {
+  margin-block: 0.08rem;
+  padding-inline-end: 0.45rem;
+  border-radius: 10px;
+  color: #64748B;
+  line-height: 1.45;
+  transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.crest-docs-theme #nd-toc a:hover {
+  color: #1D4ED8;
+  background: rgb(234 243 255 / 0.78);
+}
+
+.crest-docs-theme #nd-toc a[data-active="true"] {
+  color: var(--crest-blue-strong);
+  background: #EAF3FF;
+  font-weight: 650;
+  box-shadow: inset 0 0 0 1px rgb(59 130 246 / 0.08);
+}
+
+.crest-docs-theme #nd-toc svg .stroke-fd-primary,
+.crest-docs-theme #nd-toc .stroke-fd-primary {
+  stroke: var(--crest-blue);
+  stroke-width: 1.6;
+}
+
+.crest-docs-theme #nd-toc .bg-fd-primary,
+.crest-docs-theme #nd-toc .fill-fd-primary {
+  background-color: var(--crest-blue);
+  fill: var(--crest-blue);
+}
+
+.crest-docs-theme #nd-toc .stroke-fd-foreground\/10 {
+  stroke: rgb(59 130 246 / 0.24);
+}
+
+.crest-docs-theme #nd-toc .bg-fd-primary {
+  box-shadow: 0 0 0 4px rgb(59 130 246 / 0.14);
+}
+
+.crest-docs-theme #nd-page > h1:first-of-type {
+  display: inline-block;
+  position: relative;
+  letter-spacing: 0;
+}
+
+.crest-docs-theme #nd-page > h1:first-of-type::after {
+  display: block;
+  width: 58px;
+  height: 4px;
+  margin-top: 0.72rem;
+  border-radius: 999px;
+  content: "";
+  background: var(--crest-blue);
+}
+
+.crest-docs-theme #nd-page > p:first-of-type {
+  max-width: 48rem;
+}
+
+.crest-docs-theme .prose a {
+  color: var(--crest-blue-strong);
+  text-decoration-color: rgb(59 130 246 / 0.28);
+  text-underline-offset: 0.18em;
+}
+
+.crest-docs-theme .prose img {
+  border: 1px solid rgb(59 130 246 / 0.14);
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.08);
+}
+
+.crest-docs-theme .prose [data-rmiz] {
+  display: block;
+  margin: 1.5rem 0 2rem;
+  border-radius: 18px;
+}
+
+.crest-docs-theme .prose [data-rmiz-content],
+.crest-docs-theme .prose [data-rmiz-content] img {
+  display: block;
+  border-radius: 18px;
+}
+
+.crest-docs-theme .prose [data-rmiz-content] img {
+  width: 100%;
+  height: auto;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.crest-docs-theme .prose [data-rmiz-content="found"]:hover img {
+  border-color: rgb(59 130 246 / 0.28);
+  box-shadow: 0 22px 58px rgb(15 23 42 / 0.12);
+  transform: translateY(-1px);
+}
+
+.crest-docs-theme .prose [data-card="true"] {
+  border-color: rgb(59 130 246 / 0.16);
+  border-top: 3px solid var(--crest-blue);
+  background: #FFFFFF;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.05);
+  min-height: 8.25rem;
+  padding: 1.1rem;
+}
+
+.crest-docs-theme .prose [style*="--callout-color"] {
+  border-radius: 14px;
+  border-color: color-mix(in srgb, var(--callout-color) 28%, transparent);
+  background: #FFFFFF;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.05);
+  padding: 0.95rem 1rem 0.95rem 0.55rem;
+}
+
+.crest-docs-theme .prose [style*="--callout-color"] > div[role="none"] {
+  width: 4px;
+  border-radius: 999px;
+  opacity: 1;
+}
+
+.crest-docs-theme .prose [style*="--callout-color"] svg {
+  margin-top: 0.125rem;
+}
+
+.crest-docs-theme .prose [style*="--callout-color"] p:first-child {
+  color: #0F172A;
+  font-weight: 650;
+}
+
+.crest-docs-theme .prose [data-card="true"]:hover {
+  border-color: rgb(59 130 246 / 0.30);
+  border-top-color: var(--crest-blue-strong);
+  background: #FDFEFF;
+  box-shadow: 0 16px 38px rgb(59 130 246 / 0.10);
+}
+
+.crest-docs-theme .prose [data-card="true"]:nth-child(4n + 2) {
+  border-top-color: var(--crest-mint);
+}
+
+.crest-docs-theme .prose [data-card="true"]:nth-child(4n + 3) {
+  border-top-color: var(--crest-amber);
+}
+
+.crest-docs-theme .prose [data-card="true"]:nth-child(4n + 4) {
+  border-top-color: var(--crest-red);
+}
+
+.crest-docs-theme .prose [data-card="true"] h3 {
+  color: #0F172A;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.crest-docs-theme .prose .fd-steps {
+  --step-color: var(--crest-blue);
+  margin: 1.5rem 0 1.75rem;
+}
+
+.crest-docs-theme .prose .fd-step {
+  border-color: rgb(59 130 246 / 0.18);
+}
+
+.crest-docs-theme .prose .fd-step h3 {
+  color: #0F172A;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.crest-docs-theme .prose table {
+  overflow: hidden;
+  border: 1px solid rgb(59 130 246 / 0.16);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: 0 12px 30px rgb(15 23 42 / 0.05);
+}
+
+.crest-docs-theme .prose th {
+  border-color: rgb(59 130 246 / 0.14);
+  color: #0F172A;
+  background: #EAF3FF;
+  font-weight: 650;
+}
+
+.crest-docs-theme .prose td {
+  border-color: rgb(59 130 246 / 0.10);
+}
+
+.crest-docs-theme .prose tbody tr:nth-child(even) {
+  background: rgb(248 251 255 / 0.72);
+}
+
+.crest-docs-theme .prose code:not(pre code) {
+  border: 1px solid rgb(59 130 246 / 0.14);
+  color: #1D4ED8;
+  background: #EFF6FF;
+  box-shadow: inset 0 -1px 0 rgb(59 130 246 / 0.08);
+}
+
+.crest-docs-theme .prose figure.shiki {
+  position: relative;
+  overflow: hidden;
+  margin-block: 1.35rem 1.85rem;
+  border: 1px solid rgb(59 130 246 / 0.16);
+  border-radius: 14px;
+  background: #FFFFFF !important;
+  box-shadow: 0 16px 34px rgb(15 23 42 / 0.065);
+}
+
+.crest-docs-theme .prose figure.shiki > div:first-child {
+  border-color: rgb(59 130 246 / 0.12);
+  background: #FBFDFF !important;
+}
+
+.crest-docs-theme .prose figure.shiki > div[role="region"] {
+  background: #FFFFFF !important;
+}
+
+.crest-docs-theme .prose figure.shiki pre {
+  margin: 0;
+  padding: 1.08rem 1.25rem;
+  color: #243047;
+  background: transparent !important;
+  font-size: 0.92rem;
+  line-height: 1.72;
+}
+
+.crest-docs-theme .prose figure.shiki code {
+  background: transparent !important;
+}
+
+.crest-docs-theme .prose figure.shiki .line {
+  min-height: 1.55em;
+}
+
+.crest-docs-theme .prose figure.shiki [data-line] {
+  padding-inline: 0;
+}
+
+.crest-docs-theme .prose figure.shiki button {
+  border: 1px solid rgb(148 163 184 / 0.22);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.92);
+  color: #64748B;
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.07);
+}
+
+.crest-docs-theme .prose figure.shiki button:hover {
+  color: #2563EB;
+  background: #FFFFFF;
+  box-shadow: 0 10px 22px rgb(59 130 246 / 0.12);
+}
+
+.crest-docs-theme .prose [role="tablist"] {
+  scrollbar-width: thin;
+}
+
+.crest-docs-theme [data-toc-popover-trigger],
+.crest-docs-theme [class*="[grid-area:toc]"],
+.crest-docs-theme [style*="grid-area:toc"] {
+  border-color: rgb(59 130 246 / 0.12);
+}
+
+.crest-search-result {
+  display: grid;
+  gap: 0.24rem;
+  min-width: 0;
+}
+
+.crest-search-result-title {
+  color: #0F172A;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.crest-search-result-excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #64748B;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 767px) {
+  .crest-docs-theme #nd-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: 1rem;
+  }
+
+  .crest-docs-theme .prose {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  .crest-docs-theme .prose p,
+  .crest-docs-theme .prose li,
+  .crest-docs-theme .prose td,
+  .crest-docs-theme .prose th {
+    overflow-wrap: anywhere;
+  }
+
+  .crest-docs-theme .prose [data-rmiz],
+  .crest-docs-theme .prose [data-rmiz-content],
+  .crest-docs-theme .prose [data-rmiz-content] img {
+    max-width: 100%;
+  }
+
+  .crest-docs-theme .prose [data-card="true"] {
+    min-height: 0;
+  }
+
+  .crest-docs-theme .prose table {
+    min-width: 100%;
+  }
 }
 
 .dark {
@@ -41,4 +445,111 @@
   --mermaid-note-stroke: #8B80F0;
   --mermaid-actor-fill: #2A2640;
   --mermaid-actor-stroke: #8B80F0;
+}
+
+.dark .crest-docs-theme {
+  --color-fd-primary: #60A5FA;
+  --color-fd-primary-foreground: #07111F;
+  --color-fd-info: #60A5FA;
+  --color-fd-warning: #FBBF24;
+  --color-fd-success: #34D399;
+  --color-fd-error: #F87171;
+  --color-fd-idea: #22D3EE;
+}
+
+.dark .crest-docs-theme #nd-docs-layout {
+  background: #111827;
+}
+
+.dark .crest-docs-theme #nd-subnav,
+.dark .crest-docs-theme #nd-sidebar {
+  border-color: rgb(96 165 250 / 0.18);
+  background: rgb(15 23 42 / 0.96);
+  box-shadow: 18px 0 45px rgb(0 0 0 / 0.22);
+}
+
+.dark .crest-docs-theme #nd-sidebar button[data-state="open"] {
+  color: #E5F0FF;
+  background: rgb(96 165 250 / 0.12);
+}
+
+.dark .crest-docs-theme #toc-title,
+.dark .crest-docs-theme #nd-toc h3,
+.dark .crest-docs-theme #nd-toc a[data-active="true"] {
+  color: #93C5FD;
+}
+
+.dark .crest-docs-theme #toc-title,
+.dark .crest-docs-theme #nd-toc h3 {
+  border-color: rgb(96 165 250 / 0.18);
+  background: rgb(30 58 138 / 0.24);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.20);
+}
+
+.dark .crest-docs-theme #nd-toc a[data-active="true"] {
+  background: rgb(30 58 138 / 0.30);
+}
+
+.dark .crest-docs-theme .prose img,
+.dark .crest-docs-theme .prose table,
+.dark .crest-docs-theme .prose [data-card="true"],
+.dark .crest-docs-theme .prose [style*="--callout-color"] {
+  border-color: rgb(96 165 250 / 0.20);
+  background: rgb(15 23 42 / 0.82);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.22);
+}
+
+.dark .crest-docs-theme .prose [data-rmiz-content="found"]:hover img {
+  border-color: rgb(96 165 250 / 0.34);
+  box-shadow: 0 22px 58px rgb(0 0 0 / 0.30);
+}
+
+.dark .crest-docs-theme .prose th {
+  color: #E5F0FF;
+  background: rgb(30 58 138 / 0.32);
+}
+
+.dark .crest-docs-theme .prose tbody tr:nth-child(even) {
+  background: rgb(30 41 59 / 0.42);
+}
+
+.dark .crest-docs-theme .prose [data-card="true"] h3 {
+  color: #F8FAFC;
+}
+
+.dark .crest-docs-theme .prose [style*="--callout-color"] p:first-child,
+.dark .crest-docs-theme .prose .fd-step h3 {
+  color: #F8FAFC;
+}
+
+.dark .crest-docs-theme .prose code:not(pre code) {
+  color: #93C5FD;
+  background: rgb(30 58 138 / 0.26);
+}
+
+.dark .crest-docs-theme .prose figure.shiki {
+  border-color: rgb(96 165 250 / 0.20);
+  background: rgb(15 23 42 / 0.86) !important;
+  box-shadow: 0 14px 36px rgb(0 0 0 / 0.28);
+}
+
+.dark .crest-docs-theme .prose figure.shiki > div:first-child {
+  border-color: rgb(96 165 250 / 0.14);
+  background: rgb(15 23 42 / 0.92) !important;
+}
+
+.dark .crest-docs-theme .prose figure.shiki > div[role="region"] {
+  background: rgb(15 23 42 / 0.78) !important;
+}
+
+.dark .crest-docs-theme .prose figure.shiki pre {
+  color: #DDE8F8;
+}
+
+.dark .crest-search-result-title {
+  color: #F8FAFC;
+}
+
+.dark .crest-search-result-excerpt {
+  color: #94A3B8;
 }

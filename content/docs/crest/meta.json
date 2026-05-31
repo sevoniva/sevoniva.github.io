@@ -1,0 +1,17 @@
+{
+  "title": "Crest",
+  "root": true,
+  "defaultOpen": true,
+  "pages": [
+    "index",
+    "quick-start",
+    "deployment",
+    "configuration",
+    "user-guide",
+    "admin-guide",
+    "maintenance",
+    "security",
+    "development",
+    "faq"
+  ]
+}

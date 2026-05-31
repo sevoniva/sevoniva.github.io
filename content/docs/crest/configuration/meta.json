@@ -1,0 +1,12 @@
+{
+  "title": "配置管理",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "port-domain-https",
+    "database-and-secrets",
+    "system-settings",
+    "sso",
+    "share-security"
+  ]
+}

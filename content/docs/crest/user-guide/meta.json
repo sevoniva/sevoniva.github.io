@@ -1,0 +1,15 @@
+{
+  "title": "用户指南",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "login-workspace",
+    "datasource",
+    "dataset",
+    "chart",
+    "dashboard",
+    "screen",
+    "share-export",
+    "lineage"
+  ]
+}
