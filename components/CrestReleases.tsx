@@ -16,8 +16,10 @@ import {
   getReleasePayloadFetchedAt,
   getReleaseLabel,
   getReleaseSummary,
+  getReleaseUpdatedLabel,
   normalizeReleasePayload,
   shouldFetchGithubReleases,
+  shouldLoadBuildReleaseSnapshot,
   sortReleaseAssets,
 } from "@/lib/crest-release-utils.mjs";
 
@@ -113,9 +115,7 @@ export default function CrestReleases() {
   }, [fetchedAt]);
 
   const updatedLabel = useMemo(() => {
-    if (source === "cache") return "缓存时间";
-    if (source === "build") return "构建同步";
-    return "同步时间";
+    return getReleaseUpdatedLabel(source);
   }, [source]);
 
   const loadReleases = useCallback(async (force = false) => {
@@ -186,7 +186,12 @@ export default function CrestReleases() {
     };
 
     try {
-      if (!force) {
+      if (
+        shouldLoadBuildReleaseSnapshot({
+          force,
+          hasFreshCache: Boolean(freshCached?.releases.length),
+        })
+      ) {
         try {
           applyPayload(await fetchBuildSnapshot(), "build");
           setLoading(false);

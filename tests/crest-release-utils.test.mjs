@@ -5,9 +5,11 @@ import {
   filterVisibleReleases,
   formatAssetSize,
   formatReleaseDate,
+  getReleaseUpdatedLabel,
   getReleasePayloadFetchedAt,
   getReleaseSummary,
   normalizeReleasePayload,
+  shouldLoadBuildReleaseSnapshot,
   shouldFetchGithubReleases,
   sortReleaseAssets,
 } from "../lib/crest-release-utils.mjs";
@@ -113,6 +115,27 @@ test("release page does not call GitHub automatically after loading a snapshot",
     shouldFetchGithubReleases({ force: true, hasResolvedSnapshot: true }),
     true
   );
+});
+
+test("release page keeps a fresh manual refresh cache after reload", () => {
+  assert.equal(
+    shouldLoadBuildReleaseSnapshot({ force: false, hasFreshCache: true }),
+    false
+  );
+  assert.equal(
+    shouldLoadBuildReleaseSnapshot({ force: false, hasFreshCache: false }),
+    true
+  );
+  assert.equal(
+    shouldLoadBuildReleaseSnapshot({ force: true, hasFreshCache: true }),
+    false
+  );
+});
+
+test("release sync label does not expose local cache wording", () => {
+  assert.equal(getReleaseUpdatedLabel("build"), "构建同步");
+  assert.equal(getReleaseUpdatedLabel("github"), "同步时间");
+  assert.equal(getReleaseUpdatedLabel("cache"), "同步时间");
 });
 
 test("GitHub Pages build runs the release snapshot sync", () => {
