@@ -1,5 +1,3 @@
-"use client";
-
 import CrestSearchDialog from "@/components/CrestSearchDialog";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import type { ReactNode } from "react";
@@ -7,6 +5,7 @@ import type { ReactNode } from "react";
 export default function AppProvider({ children }: { children: ReactNode }) {
   return (
     <RootProvider
+      theme={{ enabled: false }}
       search={{
         SearchDialog: CrestSearchDialog,
         links: [

@@ -34,6 +34,11 @@ const SUPPORTED_LANGS = new Set([
   "http", "curl", "log", "text", "plaintext", "",
 ]);
 
+const LANGUAGE_ALIASES = new Map([
+  ["mermaid", "text"],
+  ["prometheus", "text"],
+]);
+
 function filenameToTitle(filename) {
   const base = path.basename(filename, path.extname(filename));
   return base
@@ -78,7 +83,8 @@ function mdxPreprocess(content) {
   content = content.replace(/```(\w+)?\n/g, (match, lang) => {
     if (!lang) return match;
     const lower = lang.toLowerCase().trim();
-    if (!SUPPORTED_LANGS.has(lower)) {
+    const mapped = LANGUAGE_ALIASES.get(lower) ?? lower;
+    if (!SUPPORTED_LANGS.has(mapped)) {
       // 记录映射（只记录一次）
       if (!mdxPreprocess._langMap) mdxPreprocess._langMap = new Map();
       if (!mdxPreprocess._langMap.has(lower)) {
@@ -87,6 +93,7 @@ function mdxPreprocess(content) {
       }
       return "```text\n";
     }
+    if (mapped !== lower) return `\`\`\`${mapped}\n`;
     return match;
   });
 

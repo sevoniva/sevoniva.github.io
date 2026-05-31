@@ -57,6 +57,15 @@ test("getReleaseSummary skips markdown headings and returns first useful text", 
   );
 });
 
+test("getReleaseSummary skips release date lines", () => {
+  assert.equal(
+    getReleaseSummary(
+      "# Crest v1.5.0\n\n发布日期：2026-06-01\n\n支持国密模式与离线部署。"
+    ),
+    "支持国密模式与离线部署。"
+  );
+});
+
 test("normalizeReleasePayload accepts build snapshots and sorts public releases", () => {
   const releases = normalizeReleasePayload({
     fetchedAt: "2026-06-01T02:00:00.000Z",
