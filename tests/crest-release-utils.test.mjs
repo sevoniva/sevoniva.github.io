@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { test } from "node:test";
 import {
   filterVisibleReleases,
@@ -7,6 +8,7 @@ import {
   getReleasePayloadFetchedAt,
   getReleaseSummary,
   normalizeReleasePayload,
+  shouldFetchGithubReleases,
   sortReleaseAssets,
 } from "../lib/crest-release-utils.mjs";
 
@@ -96,4 +98,27 @@ test("getReleasePayloadFetchedAt reads snapshot time and falls back safely", () 
     Date.parse("2026-06-01T02:00:00.000Z")
   );
   assert.equal(getReleasePayloadFetchedAt({ fetchedAt: "not-a-date" }, 7), 7);
+});
+
+test("release page does not call GitHub automatically after loading a snapshot", () => {
+  assert.equal(
+    shouldFetchGithubReleases({ force: false, hasResolvedSnapshot: true }),
+    false
+  );
+  assert.equal(
+    shouldFetchGithubReleases({ force: false, hasResolvedSnapshot: false }),
+    true
+  );
+  assert.equal(
+    shouldFetchGithubReleases({ force: true, hasResolvedSnapshot: true }),
+    true
+  );
+});
+
+test("GitHub Pages build runs the release snapshot sync", () => {
+  const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
+
+  assert.match(workflow, /run:\s+pnpm build/);
+  assert.doesNotMatch(workflow, /run:\s+pnpm next build/);
+  assert.match(workflow, /GITHUB_TOKEN:\s+\$\{\{\s*github\.token\s*\}\}/);
 });

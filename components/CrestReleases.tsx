@@ -17,6 +17,7 @@ import {
   getReleaseLabel,
   getReleaseSummary,
   normalizeReleasePayload,
+  shouldFetchGithubReleases,
   sortReleaseAssets,
 } from "@/lib/crest-release-utils.mjs";
 
@@ -120,7 +121,7 @@ export default function CrestReleases() {
   const loadReleases = useCallback(async (force = false) => {
     const cached = readReleaseCache();
     const freshCached = force ? null : readFreshReleaseCache();
-    let hasResolvedData = false;
+    let hasResolvedData = releases.length > 0;
     let lastError: unknown = null;
 
     setRefreshing(force);
@@ -194,12 +195,21 @@ export default function CrestReleases() {
         }
       }
 
-      try {
-        applyPayload(await fetchGithubReleases(), "github");
+      if (
+        shouldFetchGithubReleases({
+          force,
+          hasResolvedSnapshot: hasResolvedData,
+        })
+      ) {
+        try {
+          applyPayload(await fetchGithubReleases(), "github");
+          return;
+        } catch (cause) {
+          lastError = cause;
+          if (hasResolvedData) return;
+        }
+      } else {
         return;
-      } catch (cause) {
-        lastError = cause;
-        if (hasResolvedData) return;
       }
 
       if (force) {
@@ -226,7 +236,7 @@ export default function CrestReleases() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [releases.length]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
