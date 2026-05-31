@@ -1,0 +1,118 @@
+---
+title: 单机在线安装
+description: 使用 installer/install.sh 在线安装 Crest，并理解关键配置和安装结果。
+---
+
+单机在线安装适合有网络访问能力的服务器。安装脚本会自动准备运行目录、配置文件、Docker Compose、系统服务和初始密码。
+
+## 安装目录
+
+在源码仓库中进入安装目录：
+
+```bash
+cd installer
+```
+
+主要文件：
+
+| 文件 | 说明 |
+| --- | --- |
+| `install.sh` | 安装或升级入口 |
+| `install.conf` | 安装配置模板 |
+| `uninstall.sh` | 卸载脚本 |
+| `crestctl` | 安装后的运维命令 |
+| `crest/docker-compose.yml` | Docker Compose 模板 |
+| `crest/templates/application.yml` | 后端配置模板 |
+
+## 修改安装配置
+
+安装前先打开 `install.conf`，至少确认以下配置：
+
+```bash
+DE_BASE=/opt
+DE_PORT=8100
+DE_APP_IMAGE=ghcr.io/sevoniva/crest:v1.3.0
+DE_MYSQL_IMAGE=mysql:8.4.5
+DE_ORIGIN_LIST=http://localhost:8100
+```
+
+生产环境建议显式配置：
+
+```bash
+DE_PORT=8100
+DE_ORIGIN_LIST=https://bi.example.com
+DE_INITIAL_PASSWORD='替换为高强度初始密码'
+DE_MYSQL_PASSWORD='替换为高强度数据库密码'
+DE_AES_KEY='32位加密Key'
+DE_AES_IV='16位加密IV'
+```
+
+如果留空，安装脚本会自动生成密码和加密参数，并在安装日志中输出。
+
+## 执行安装
+
+```bash
+bash install.sh
+```
+
+安装脚本会依次完成：
+
+<Steps>
+  <Step>
+    ### 读取配置
+    加载 `install.conf`，确定安装目录、端口、镜像和密码策略。
+  </Step>
+  <Step>
+    ### 初始化目录
+    创建 `/opt/crest` 或你在 `DE_BASE` 中指定的运行目录。
+  </Step>
+  <Step>
+    ### 准备容器
+    安装或复用 Docker 与 Docker Compose，拉取或加载应用和 MySQL 镜像。
+  </Step>
+  <Step>
+    ### 生成运行配置
+    写入数据库连接、AES 参数、初始密码、允许来源等配置。
+  </Step>
+  <Step>
+    ### 启动服务
+    启动 MySQL 和 Crest，并注册系统服务。
+  </Step>
+  <Step>
+    ### 输出登录信息
+    输出访问地址、管理员账号和初始密码。
+  </Step>
+</Steps>
+
+## 登录验证
+
+浏览器访问安装输出的地址：
+
+```text
+http://服务器IP:8100
+```
+
+![登录页](/images/docs/crest/screenshots/login.png)
+
+默认账号：
+
+```text
+用户名：admin
+密码：安装完成后终端输出的初始密码
+```
+
+登录后进入工作台：
+
+![工作台](/images/docs/crest/screenshots/workspace.png)
+
+## 安装失败时先看哪里
+
+| 现象 | 先检查 |
+| --- | --- |
+| Docker 安装失败 | 服务器是否能访问软件源，或是否需要使用离线包 |
+| 镜像拉取失败 | 镜像仓库网络、代理、镜像名称 |
+| 端口占用 | `ss -lntp | grep 8100` |
+| 数据库启动失败 | MySQL 容器日志、磁盘空间、数据目录权限 |
+| Crest 启动失败 | `docker compose logs -f crest` |
+
+安装脚本日志应保留，便于后续定位初始密码、安装目录和错误原因。

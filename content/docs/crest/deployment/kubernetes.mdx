@@ -1,0 +1,112 @@
+---
+title: Kubernetes 部署
+description: 使用 deploy/kubernetes 下的清单部署 Crest，支持内置 MySQL 和外部 MySQL。
+---
+
+Crest 提供 Kustomize 清单，适合部署到 Kubernetes 集群。当前支持内置 MySQL 和外部 MySQL 两种方式。
+
+## 目录结构
+
+```text
+deploy/kubernetes
+├── base
+│   ├── configmap-app.yaml
+│   ├── deployment.yaml
+│   ├── kustomization.yaml
+│   ├── pvc.yaml
+│   ├── service.yaml
+│   └── serviceaccount.yaml
+├── internal-mysql
+│   ├── kustomization.yaml
+│   ├── mysql-init.sql
+│   ├── mysql-my.cnf
+│   ├── mysql.yaml
+│   └── namespace.yaml
+└── external-mysql
+    ├── kustomization.yaml
+    └── namespace.yaml
+```
+
+## 内置 MySQL 模式
+
+适合快速验证和测试环境：
+
+```bash
+kubectl apply -k deploy/kubernetes/internal-mysql
+kubectl -n crest-internal rollout status statefulset/crest-mysql --timeout=180s
+kubectl -n crest-internal rollout status deployment/crest --timeout=300s
+kubectl -n crest-internal port-forward svc/crest 18100:8100
+```
+
+访问：
+
+```text
+http://127.0.0.1:18100/index.html
+```
+
+管理员账号：
+
+```text
+用户名：admin
+密码：internal-mysql/kustomization.yaml 中 CREST_INITIAL_PASSWORD 的值
+```
+
+内置 MySQL 模式适合验证部署链路，不建议直接作为正式生产方案。使用前要确认 PVC 已绑定，MySQL Pod 重启后数据仍然存在。
+
+## 外部 MySQL 模式
+
+适合生产环境。先准备外部数据库，再替换 Secret 中的连接信息：
+
+```bash
+kubectl apply -k deploy/kubernetes/external-mysql
+kubectl -n crest-external rollout status deployment/crest --timeout=300s
+```
+
+外部数据库准备参考“外部 MySQL”章节。
+
+外部 MySQL 模式上线前，要先由数据库负责人确认数据库、账号、备份和监控都已就绪。Crest Pod 启动失败时，优先检查 Secret、网络策略、数据库白名单和 DNS。
+
+## 必须替换的 Secret
+
+| 变量 | 说明 |
+| --- | --- |
+| `CREST_DB_USERNAME` | 元数据库账号 |
+| `CREST_DB_PASSWORD` | 元数据库密码 |
+| `MYSQL_ROOT_PASSWORD` | 内置 MySQL 模式需要 |
+| `CREST_AES_KEY` | 32 位加密 Key |
+| `CREST_AES_IV` | 16 位加密 IV |
+| `CREST_INITIAL_PASSWORD` | 管理员初始密码 |
+
+不要把生产密码提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。
+
+## 常用排查命令
+
+```bash
+kubectl get pods -n crest-internal
+kubectl describe pod -n crest-internal <pod-name>
+kubectl logs -n crest-internal deploy/crest
+kubectl get svc -n crest-internal
+kubectl get pvc -n crest-internal
+```
+
+排查顺序建议：
+
+1. `kubectl get pods` 看 Pod 是否 Running。
+2. `kubectl describe pod` 看调度、镜像拉取、挂载和探针。
+3. `kubectl logs` 看应用启动和数据库连接。
+4. `kubectl get svc` 看 Service 端口。
+5. `kubectl get ingress` 看域名、证书和路径。
+6. 进入浏览器验证登录、工作台和系统管理。
+
+## 集群上线检查
+
+| 检查项 | 说明 |
+| --- | --- |
+| Pod 状态 | Crest 和 MySQL Pod 应为 Running |
+| PVC | 数据卷应绑定成功 |
+| Secret | 不应保留占位值 |
+| Service | 端口指向应用容器 `8100` |
+| Ingress | 域名、证书和路径正确 |
+| 日志 | 没有数据库连接失败和 Flyway 迁移失败 |
+
+Kubernetes 环境中，备份、日志和监控通常由平台统一提供。上线前应确认 Crest 的 PVC、数据库和日志都已纳入平台运维范围。

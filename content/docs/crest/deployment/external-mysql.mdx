@@ -1,0 +1,95 @@
+---
+title: 外部 MySQL
+description: 在生产环境中为 Crest 准备外部 MySQL 数据库和连接配置。
+---
+
+生产环境推荐使用外部 MySQL，由数据库平台统一维护备份、监控和高可用。Crest 只负责连接和使用该元数据库。
+
+## 创建数据库
+
+```sql
+CREATE DATABASE crest
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+```
+
+如果使用兼容 MySQL 的数据库，请确认字符集、排序规则、事务、索引长度和时间字段行为符合 MySQL 8.0 习惯。
+
+创建后建议立即检查字符集：
+
+```sql
+SHOW CREATE DATABASE crest;
+```
+
+如果字符集不是 `utf8mb4`，中文、特殊符号或部分导入数据可能出现异常。生产环境不要等系统上线后再改字符集。
+
+## 创建账号
+
+示例：
+
+```sql
+CREATE USER 'crest_user'@'%' IDENTIFIED BY '替换为强密码';
+GRANT ALL PRIVILEGES ON crest.* TO 'crest_user'@'%';
+FLUSH PRIVILEGES;
+```
+
+生产环境可以按企业规范收敛来源网段，不建议使用过宽的访问来源。
+
+账号创建完成后，用 Crest 部署服务器实际出口地址测试登录。数据库客户端能在管理员电脑上登录，不代表 Crest 服务器也能访问。
+
+## 配置连接
+
+单机安装时可在配置中指定：
+
+```bash
+CREST_DB_HOST=mysql.example.internal
+CREST_DB_PORT=3306
+CREST_DB_NAME=crest
+CREST_DB_USERNAME=crest_user
+CREST_DB_PASSWORD='替换为强密码'
+```
+
+Kubernetes 部署时，在 ConfigMap 和 Secret 中替换对应字段。
+
+配置密码时注意引号和特殊字符。密码中包含 `$`、`!`、`&`、空格等字符时，Shell、YAML 和 Compose 都可能需要转义。修改后不要只看服务能启动，还要进入系统检查数据源、数据集和系统设置是否正常。
+
+## 连接检查
+
+从 Crest 服务器测试：
+
+```bash
+mysql -h mysql.example.internal -P 3306 -u crest_user -p crest
+```
+
+确认：
+
+1. 网络可达。
+2. 账号密码正确。
+3. 数据库存在。
+4. 用户有建表、索引、插入、更新和查询权限。
+5. 数据库时间和服务器时间差异可控。
+
+## 迁移已有内置 MySQL
+
+如果要从内置 MySQL 迁移到外部 MySQL：
+
+1. 停止 Crest 服务。
+2. 备份内置 MySQL 数据库。
+3. 在外部 MySQL 创建目标库。
+4. 导入备份。
+5. 修改 Crest 数据库连接配置。
+6. 启动 Crest。
+7. 登录系统验证资源、权限、数据源、图表和分享。
+
+<Callout type="warning" title="迁移前必须备份">
+  数据库迁移涉及账号、权限、数据源密文、图表配置和分享链接。不要在没有备份和回滚方案的情况下直接切换连接。
+</Callout>
+
+迁移后按下面清单验收：
+
+1. 管理员和普通用户都能登录。
+2. 用户、组织、角色和权限仍然存在。
+3. 数据源密码可以正常解密并测试连接。
+4. 数据集预览正常。
+5. 仪表盘、大屏、分享链接和导出中心可用。
+6. 审计日志能看到迁移后的登录和操作记录。

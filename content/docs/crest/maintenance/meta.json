@@ -1,0 +1,10 @@
+{
+  "title": "运维维护",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "backup-restore",
+    "upgrade-rollback",
+    "logs-health"
+  ]
+}
