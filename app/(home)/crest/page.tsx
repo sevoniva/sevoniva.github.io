@@ -50,7 +50,7 @@ export default function CrestPage() {
           />
 
           <p className="mt-5 text-2xl font-bold tracking-tight text-fd-foreground">
-            数据登顶，决策有据
+            面向私有化部署的开源 BI 平台
           </p>
           <p className="mt-3 max-w-lg mx-auto text-base text-fd-muted-foreground leading-relaxed">
             Crest v1.5.0 面向企业内网和专有云部署，覆盖数据接入、建模、可视化、分享导出、数据血缘和平台管理。项目遵循 GPLv3，并保留 DataEase 上游许可声明。
@@ -543,7 +543,7 @@ export default function CrestPage() {
             className="h-10 w-auto mx-auto mb-5"
           />
           <h2 className="relative text-2xl font-bold tracking-tight text-fd-foreground">
-            数据登顶，决策有据
+            Crest 文档中心
           </h2>
           <p className="relative mt-3 max-w-md mx-auto text-base text-fd-muted-foreground">
             面向 v1.5.0 的公开文档已覆盖部署、配置、使用、管理、维护和开发扩展。
