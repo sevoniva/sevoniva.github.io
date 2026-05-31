@@ -19,7 +19,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Crest — 开源 BI 平台",
   description:
-    "Crest v1.5.0 是面向私有化部署的开源 BI 平台，覆盖数据源、数据集、仪表盘、数据大屏、数据血缘、分享导出和平台管理。",
+    "Crest v1.5.0 覆盖数据源、数据集、仪表盘、数据大屏、数据血缘、分享导出和平台管理。",
 };
 
 export default function CrestPage() {
