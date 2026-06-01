@@ -1,0 +1,164 @@
+---
+title: 开发总览
+description: Crest v1.5.1 开发指南入口，说明源码结构、开发边界、构建命令和提交前检查。
+---
+
+本章面向需要阅读 Crest 源码、搭建本地环境、扩展功能或参与发布维护的开发者。
+
+第一次接手项目时，先看 [本地开发环境](/docs/crest/development/local-setup)。那一页按实际开发顺序写清楚了拉代码、导数据库、配置本地变量、关闭 Flyway/SSO、启动前后端和打包。
+
+<Cards>
+  <Card title="本地开发环境" href="/docs/crest/development/local-setup">
+    从 `v1.5.1` 源码开始，把本机开发环境跑起来。
+  </Card>
+</Cards>
+
+## 源码结构
+
+| 路径 | 说明 |
+| --- | --- |
+| `core/core-backend` | Spring Boot 后端服务，包含接口、业务实现、Flyway 迁移和最终 JAR 打包入口 |
+| `core/core-frontend` | Vue 3.3、Vite、TypeScript、Element Plus、Pinia、vxe-table 前端工程 |
+| `sdk/api` | 对内 API、DTO、VO 和接口契约 |
+| `sdk/common` | 认证、通用模型、异常处理、工具类和 Spring 配置 |
+| `sdk/extensions/extensions-datasource` | JDBC 数据源扩展、数据源定义和方言能力 |
+| `sdk/extensions/extensions-view` | 可视化视图相关扩展 |
+| `drivers` | 随仓库维护的 JDBC 驱动 |
+| `installer` | 单机安装脚本、Docker Compose 模板、控制脚本和离线包制作脚本 |
+| `deploy/kubernetes` | Kubernetes 部署清单，支持内置 MySQL 和外部 MySQL |
+| `docs` | 源码仓库内的开发、部署和专题说明 |
+
+阅读代码时不要从目录逐个翻起。更有效的方式是从页面操作反查：页面调用哪个接口，接口进入哪个 Service，Service 访问哪些 Mapper、缓存、文件目录或外部数据源。
+
+## 开发边界
+
+Crest `v1.5.1` 主要维护这些能力：
+
+| 领域 | 典型内容 |
+| --- | --- |
+| 数据准备 | 数据源、数据集、SQL 数据集、字段管理、缓存同步 |
+| 可视化分析 | 图表、仪表盘、数据大屏、分享、导出 |
+| 数据治理 | 字段级数据血缘 |
+| 平台管理 | 用户、组织、角色、权限、系统参数、站点设置、字体管理 |
+| 安全能力 | 登录鉴权、审计、SSO、国密模式、敏感配置加密 |
+| 部署交付 | 单机安装、离线包、Kubernetes、镜像构建 |
+
+新增功能时先确认它属于哪个领域，再补齐菜单、权限、接口、数据库迁移、审计、文档和截图。只改前端入口，后端权限和数据库不跟进，后续一定会在刷新、分享、导出或升级时暴露问题。
+
+## 工具链
+
+| 工具 | 版本 |
+| --- | --- |
+| JDK | 21 |
+| Maven | 3.9.x |
+| Node.js | 22.x |
+| pnpm | 11.1.2 |
+| MySQL | 8.0 / 8.4 |
+| Docker | 可选，构建镜像或安装包时使用 |
+
+本地开发不强制依赖 Docker。没有 Docker 时，可以用本机或内网 MySQL 启动后端和前端；需要交付镜像时再交给 CI 或构建机处理。
+
+## 常用构建命令
+
+安装前端依赖：
+
+```bash
+cd core/core-frontend
+pnpm install --frozen-lockfile
+```
+
+启动前端：
+
+```bash
+cd core/core-frontend
+pnpm dev
+```
+
+构建前端：
+
+```bash
+cd core/core-frontend
+pnpm run build:base
+```
+
+只检查后端编译：
+
+```bash
+mvn -s .mvn/settings.xml \
+  -pl :core-backend -am \
+  test-compile \
+  -DskipTests \
+  -Dmaven.test.skip=true \
+  -Dmaven.antrun.skip=true
+```
+
+打后端 JAR：
+
+```bash
+mvn -s .mvn/settings.xml \
+  -pl :core-backend -am \
+  clean package \
+  -Pstandalone \
+  -DskipTests \
+  -Dmaven.test.skip=true
+```
+
+构建本地镜像：
+
+```bash
+docker build -t ghcr.io/sevoniva/crest:local .
+```
+
+完整打包前先执行前端构建。`core-backend` 的 standalone profile 会把 `core/core-frontend/dist` 复制进后端静态资源目录。
+
+## 数据库迁移
+
+后端使用 Flyway 管理初始化脚本。
+
+| 目录 | 说明 |
+| --- | --- |
+| `core/core-backend/src/main/resources/db/migration` | 核心表结构和基础初始化数据 |
+| `core/core-backend/src/main/resources/db/demo-migration` | 可选演示资源 |
+
+`v1.5.1` 的核心初始化脚本是：
+
+```text
+core/core-backend/src/main/resources/db/migration/V1.5.0.1__initial_schema.sql
+```
+
+演示资源脚本是：
+
+```text
+core/core-backend/src/main/resources/db/demo-migration/V1.5.0.2__demo_resources.sql
+```
+
+导入完整开发库 dump 后，本地要关闭 Flyway。空库初始化时再打开 Flyway。具体配置见 [本地开发环境](/docs/crest/development/local-setup)。
+
+## 国密调试
+
+Crest 支持 `standard` 和 `sm-suite` 两种加密模式。需要验证国密能力时，本地环境变量至少包含：
+
+```bash
+export CREST_CRYPTO_MODE='sm-suite'
+export CREST_SM4_KEY='0123456789abcdef'
+```
+
+如果数据库 dump 来自国密环境，`CREST_SM4_KEY` 必须使用来源环境的原值。密钥不一致时，已保存的数据源密码和 SSO Secret 可能无法解密。
+
+## 提交前检查
+
+提交前确认：
+
+1. 没有提交数据库密码、Token、证书、私有 dump、运行日志和个人内网地址。
+2. 没有提交 `.local/`、`.runtime/`、`node_modules/`、`dist/`、`target/`。
+3. 改了前端，至少跑过 `pnpm run build:base` 或对应检查命令。
+4. 改了后端，至少跑过相关模块的 Maven 编译。
+5. 改了表结构、菜单、权限、初始化数据，要补 Flyway 脚本。
+6. 改了页面入口、按钮、配置项、权限或操作流程，要同步更新文档和截图。
+
+最后检查工作区：
+
+```bash
+git status --short
+git diff --stat
+```

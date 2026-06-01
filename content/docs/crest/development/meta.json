@@ -1,0 +1,8 @@
+{
+  "title": "开发指南",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "local-setup"
+  ]
+}
