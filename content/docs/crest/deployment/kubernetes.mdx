@@ -1,13 +1,13 @@
 ---
 title: Kubernetes 部署
-description: 使用 deploy/kubernetes 下的清单部署 Crest，支持内置 MySQL 和外部 MySQL。
+description: 使用 deploy/kubernetes 清单部署 Crest v1.5.4，支持前后端分离、内置 MySQL、外部 MySQL 和可选监控组件。
 ---
 
-Crest 提供 Kustomize 清单，适合部署到 Kubernetes 集群。当前支持内置 MySQL 和外部 MySQL 两种方式。
+Crest 提供 Kustomize 清单，适合部署到 Kubernetes 集群。v1.5.4 的集群部署采用前后端分离结构：`crest` 是前端 Nginx 网关，`crest-service` 是后端 Spring Boot 服务，元数据库可选择内置 MySQL 或外部 MySQL。需要运行监控时，可启用 Prometheus 和 Grafana overlay。
 
-Kubernetes 部署更适合已有集群和运维体系的团队。它的重点不是把 Pod 拉起来，而是把命名空间、Secret、PVC、Service、Ingress、数据库、日志和备份都纳入统一管理。首次验证可以用内置 MySQL，生产环境建议优先评估外部 MySQL。
+Kubernetes 部署更适合已有集群和运维体系的团队。它的重点不是把 Pod 拉起来，而是把命名空间、Secret、PVC、Service、Ingress、数据库、日志、备份和监控都纳入统一管理。首次验证可以用内置 MySQL，生产环境建议优先评估外部 MySQL。
 
-集群部署完成后，仍然要回到页面验证，而不是只看 Pod 状态。下面的工作台截图可作为第一轮页面验收参考：能登录、能加载菜单、能显示资源统计，才说明前后端和元数据库基本连通。
+集群部署完成后，仍然要回到页面验证，而不是只看 Pod 状态。下面的工作台截图可作为第一轮页面验收参考：能登录、能加载菜单、能显示资源统计，才说明前端网关、后端服务和元数据库基本连通。
 
 ![工作台](/images/docs/crest/screenshots/workspace.png)
 
@@ -17,6 +17,7 @@ Kubernetes 部署更适合已有集群和运维体系的团队。它的重点不
 deploy/kubernetes
 ├── base
 │   ├── configmap-app.yaml
+│   ├── configmap-nginx.yaml
 │   ├── deployment.yaml
 │   ├── kustomization.yaml
 │   ├── pvc.yaml
@@ -28,20 +29,81 @@ deploy/kubernetes
 │   ├── mysql-my.cnf
 │   ├── mysql.yaml
 │   └── namespace.yaml
-└── external-mysql
+├── external-mysql
+│   ├── kustomization.yaml
+│   └── namespace.yaml
+├── observability
+│   ├── grafana
+│   ├── prometheus
+│   ├── kustomization.yaml
+│   ├── networkpolicy.yaml
+│   └── observability.yaml
+├── internal-mysql-observability
+│   ├── kustomization.yaml
+│   └── observability-env-patch.yaml
+└── external-mysql-observability
     ├── kustomization.yaml
-    └── namespace.yaml
+    └── observability-env-patch.yaml
 ```
 
-目录按“公共基础配置”和“两种数据库模式”拆分。`base` 放 Crest 应用本身的 Deployment、Service、PVC 和配置；`internal-mysql` 额外部署 MySQL；`external-mysql` 只部署 Crest，并通过 Secret 连接外部数据库。修改前先确认自己要改的是哪一种模式，不要同时改两个 overlay。
+`base` 放应用公共配置，包含前端和后端两个 Deployment、两个 Service、PVC、ServiceAccount、后端配置和 Nginx 配置。`internal-mysql` 额外部署 MySQL StatefulSet；`external-mysql` 只部署 Crest，并通过 Secret 连接外部数据库。带 `observability` 后缀的 overlay 会额外部署 Prometheus、Grafana 和相关访问控制。
+
+## 镜像与服务
+
+默认应用镜像：
+
+```text
+ghcr.io/sevoniva/crest-service:v1.5.4
+ghcr.io/sevoniva/crest-web:v1.5.4
+```
+
+默认服务：
+
+| 服务 | 作用 | 暴露方式 |
+| --- | --- | --- |
+| `crest` | 前端 Nginx 网关，提供页面、静态资源、API 转发和 WebSocket 转发 | ClusterIP，端口 `8100` |
+| `crest-service` | 后端 Spring Boot 服务，提供接口、任务、OpenAPI 和指标端点 | ClusterIP，端口 `8100` |
+| `crest-mysql` | 内置 MySQL 模式使用的元数据库 | 仅集群内访问 |
+| `crest-prometheus` | 可选，抓取后端指标 | ClusterIP |
+| `crest-grafana` | 可选，展示运行看板 | ClusterIP，按现场网关规范暴露 |
+
+前端和后端容器均以非 root 用户运行，并启用只读根文件系统、禁止权限提升、丢弃 Linux capability 和 RuntimeDefault seccomp。生产环境如果使用内部镜像仓库，应先同步 `crest-service`、`crest-web`、MySQL、Prometheus 和 Grafana 镜像，再替换清单中的镜像地址。
+
+## 健康检查
+
+| 组件 | 路径 | 用途 |
+| --- | --- | --- |
+| 前端网关 | `/healthz` | 判断 Nginx 进程和站点配置是否可用 |
+| 后端存活 | `/api/v1/actuator/health/liveness` | 判断后端进程是否存活 |
+| 后端就绪 | `/api/v1/actuator/health/readiness` | 校验数据库连接，适合流量接入前验证 |
+
+`readiness` 依赖元数据库，数据库不可用时会返回失败。`liveness` 不访问数据库，避免数据库短暂抖动时误杀后端容器。
 
 ## 内置 MySQL 模式
 
-适合快速验证和测试环境：
+适合快速验证和测试环境。先创建命名空间和 Secret：
+
+```bash
+kubectl create namespace crest-internal --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n crest-internal create secret generic crest-db-secret \
+  --from-literal=CREST_DB_USERNAME=root \
+  --from-literal=CREST_DB_PASSWORD='<strong-db-password>' \
+  --from-literal=MYSQL_ROOT_PASSWORD='<strong-db-password>' \
+  --from-literal=CREST_AES_KEY='<32-character-aes-key>' \
+  --from-literal=CREST_AES_IV='<16-character-aes-iv>' \
+  --from-literal=CREST_CRYPTO_MODE=standard \
+  --from-literal=CREST_SM4_KEY='<16-character-sm4-key>' \
+  --from-literal=CREST_INITIAL_PASSWORD='<initial-admin-password>' \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+部署并等待服务就绪：
 
 ```bash
 kubectl apply -k deploy/kubernetes/internal-mysql
 kubectl -n crest-internal rollout status statefulset/crest-mysql --timeout=180s
+kubectl -n crest-internal rollout status deployment/crest-service --timeout=300s
 kubectl -n crest-internal rollout status deployment/crest --timeout=300s
 kubectl -n crest-internal port-forward svc/crest 18100:8100
 ```
@@ -56,27 +118,45 @@ http://127.0.0.1:18100/index.html
 
 ```text
 用户名：admin
-密码：internal-mysql/kustomization.yaml 中 CREST_INITIAL_PASSWORD 的值
+密码：crest-db-secret 中 CREST_INITIAL_PASSWORD 的值
 ```
 
 内置 MySQL 模式适合验证部署链路，不建议直接作为正式生产方案。使用前要确认 PVC 已绑定，MySQL Pod 重启后数据仍然存在。
 
-验证内置 MySQL 时建议完成三件事：创建一个测试仪表盘、重启 MySQL Pod、再次登录确认资源仍存在。只看到 Pod Running 不能证明数据持久化可靠。
-
 ## 外部 MySQL 模式
 
-适合生产环境。先准备外部数据库，再替换 Secret 中的连接信息：
+适合生产环境。先准备外部数据库：
+
+```sql
+CREATE DATABASE crest DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+```
+
+修改 `deploy/kubernetes/external-mysql/kustomization.yaml` 中的数据库地址、端口、库名和 JDBC 参数。然后创建命名空间和 Secret：
+
+```bash
+kubectl create namespace crest-external --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n crest-external create secret generic crest-db-secret \
+  --from-literal=CREST_DB_USERNAME='<db-user>' \
+  --from-literal=CREST_DB_PASSWORD='<db-password>' \
+  --from-literal=CREST_AES_KEY='<32-character-aes-key>' \
+  --from-literal=CREST_AES_IV='<16-character-aes-iv>' \
+  --from-literal=CREST_CRYPTO_MODE=standard \
+  --from-literal=CREST_SM4_KEY='<16-character-sm4-key>' \
+  --from-literal=CREST_INITIAL_PASSWORD='<initial-admin-password>' \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+部署并等待服务就绪：
 
 ```bash
 kubectl apply -k deploy/kubernetes/external-mysql
+kubectl -n crest-external rollout status deployment/crest-service --timeout=300s
 kubectl -n crest-external rollout status deployment/crest --timeout=300s
+kubectl -n crest-external port-forward svc/crest 18101:8100
 ```
 
-外部数据库准备参考“外部 MySQL”章节。
-
-外部 MySQL 模式上线前，要先由数据库负责人确认数据库、账号、备份和监控都已就绪。Crest Pod 启动失败时，优先检查 Secret、网络策略、数据库白名单和 DNS。
-
-外部 MySQL 模式建议把数据库连接信息放入集群 Secret 或企业密钥系统，不要写进普通 ConfigMap。上线前还要确认集群节点到数据库地址的网络连通性，特别是跨 VPC、专线、白名单和 DNS 解析。
+外部 MySQL 模式上线前，要先由数据库负责人确认数据库、账号、备份、监控、网络白名单和 DNS 都已就绪。Crest Pod 启动失败时，优先检查 Secret、网络策略、数据库白名单和 DNS。
 
 ## 必须替换的 Secret
 
@@ -91,23 +171,22 @@ kubectl -n crest-external rollout status deployment/crest --timeout=300s
 | `CREST_SM4_KEY` | 国密 `sm-suite` 模式使用的 SM4 Key |
 | `CREST_INITIAL_PASSWORD` | 管理员初始密码 |
 
-生产密码不得提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。
-
-如果使用 GitOps 管理清单，建议只提交 Secret 模板或加密后的 Secret。明文生产密码一旦进入 Git 历史，后续删除文件也不能真正消除泄露风险。
+生产密码不得提交到 Git 仓库。建议使用集群原生 Secret 管理方案或企业密钥管理系统。如果使用 GitOps 管理清单，建议只提交 Secret 模板或加密后的 Secret。
 
 ## 启用国密模式
 
-Kubernetes 部署同样支持 Crest v1.5.0 的国密能力。需要 SM2、SM3、SM4 时，在所选 overlay 的 `kustomization.yaml` 中设置：
+需要 SM2、SM3、SM4 时，在所选 namespace 的 `crest-db-secret` 中设置：
 
-```yaml
+```text
 CREST_CRYPTO_MODE=sm-suite
 CREST_SM4_KEY=<16-character-sm4-key>
 ```
 
-使用内置 MySQL 时修改 `deploy/kubernetes/internal-mysql/kustomization.yaml`；使用外部 MySQL 时修改 `deploy/kubernetes/external-mysql/kustomization.yaml`。修改后重新应用对应 overlay：
+修改后重新应用对应 overlay，并等待后端和前端滚动完成：
 
 ```bash
 kubectl apply -k deploy/kubernetes/external-mysql
+kubectl -n crest-external rollout status deployment/crest-service --timeout=300s
 kubectl -n crest-external rollout status deployment/crest --timeout=300s
 ```
 
@@ -117,12 +196,50 @@ kubectl -n crest-external rollout status deployment/crest --timeout=300s
   `CREST_CRYPTO_MODE=sm-suite` 启用后，SM2 私钥和敏感配置会依赖 `CREST_SM4_KEY` 解密。升级、重启、扩容和恢复时必须使用同一个 SM4 Key。
 </Callout>
 
+## 启用监控组件
+
+启用 Prometheus 和 Grafana 时，先创建 `crest-observability-secret`：
+
+```bash
+kubectl -n crest-internal create secret generic crest-observability-secret \
+  --from-literal=CREST_PROMETHEUS_TOKEN='<prometheus-scrape-token>' \
+  --from-literal=GF_SECURITY_ADMIN_PASSWORD='<grafana-admin-password>' \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+内置 MySQL 模式：
+
+```bash
+kubectl apply -k deploy/kubernetes/internal-mysql-observability
+```
+
+外部 MySQL 模式：
+
+```bash
+kubectl apply -k deploy/kubernetes/external-mysql-observability
+```
+
+Grafana 默认是 ClusterIP 服务，按现场网关规范暴露。临时查看可使用：
+
+```bash
+kubectl -n crest-internal port-forward svc/crest-grafana 3000:3000
+```
+
+Prometheus 同样只在集群内访问：
+
+```bash
+kubectl -n crest-internal port-forward svc/crest-prometheus 9090:9090
+```
+
+指标、看板和告警规则说明见 [监控与可观测性](/docs/crest/maintenance/observability)。
+
 ## 常用排查命令
 
 ```bash
 kubectl get pods -n crest-internal
 kubectl describe pod -n crest-internal <pod-name>
-kubectl logs -n crest-internal deploy/crest
+kubectl logs -n crest-internal deploy/crest-service --tail=200
+kubectl logs -n crest-internal deploy/crest --tail=200
 kubectl get svc -n crest-internal
 kubectl get pvc -n crest-internal
 ```
@@ -131,7 +248,7 @@ kubectl get pvc -n crest-internal
 
 1. `kubectl get pods` 看 Pod 是否 Running。
 2. `kubectl describe pod` 看调度、镜像拉取、挂载和探针。
-3. `kubectl logs` 看应用启动和数据库连接。
+3. `kubectl logs` 先看后端 `crest-service`，再看前端网关 `crest`。
 4. `kubectl get svc` 看 Service 端口。
 5. `kubectl get ingress` 看域名、证书和路径。
 6. 进入浏览器验证登录、工作台和系统管理。
@@ -140,14 +257,16 @@ kubectl get pvc -n crest-internal
 
 | 检查项 | 说明 |
 | --- | --- |
-| Pod 状态 | Crest 和 MySQL Pod 应为 Running |
+| Pod 状态 | `crest`、`crest-service` 和 MySQL Pod 应为 Running |
 | PVC | 数据卷应绑定成功 |
 | Secret | 不应保留占位值 |
-| Service | 端口指向应用容器 `8100` |
+| Service | 前端 Service 指向网关，后端 Service 只供集群内访问 |
 | Ingress | 域名、证书和路径正确 |
-| 日志 | 没有数据库连接失败和 Flyway 迁移失败 |
+| 健康检查 | `/healthz`、`liveness` 和 `readiness` 返回正常 |
+| 日志 | 没有数据库连接失败、Flyway 迁移失败和持续 5xx |
+| 监控 | 启用后 Prometheus target 正常，Grafana 看板有数据 |
 
-Kubernetes 环境中，备份、日志和监控通常由平台统一提供。上线前应确认 Crest 的 PVC、数据库和日志都已纳入平台运维范围。
+Kubernetes 环境中，备份、日志和监控通常由平台统一提供。上线前应确认 Crest 的 PVC、数据库、日志和监控都已纳入平台运维范围。
 
 ## 推荐发布流程
 
@@ -166,11 +285,15 @@ Kubernetes 环境中，备份、日志和监控通常由平台统一提供。上
   </Step>
   <Step>
     ### 配置 Ingress
-    绑定正式域名和 HTTPS 证书，检查反向代理头和访问路径。
+    绑定正式域名和 HTTPS 证书，检查反向代理头、上传大小、WebSocket 和访问路径。
+  </Step>
+  <Step>
+    ### 接入日志和监控
+    确认应用日志、数据库日志、Prometheus 指标和 Grafana 看板进入现场运维体系。
   </Step>
   <Step>
     ### 切换生产流量
-    在变更窗口发布，观察应用日志、Pod 重启、数据库连接和用户登录反馈。
+    在变更窗口发布，观察应用日志、Pod 重启、数据库连接、接口错误率和用户登录反馈。
   </Step>
 </Steps>
 
@@ -178,8 +301,10 @@ Kubernetes 环境中，备份、日志和监控通常由平台统一提供。上
 
 | 调整项 | 建议 |
 | --- | --- |
-| 副本数 | 先确认应用和存储是否支持多副本，再调整 Deployment |
-| 资源限制 | 按查询量、导出量和并发访问设置 requests 与 limits |
-| 日志采集 | 接入集群日志系统，保留应用启动、登录、导出和异常日志 |
-| Ingress | 固定域名、HTTPS、超时时间和上传大小限制 |
-| 备份 | 外部 MySQL 由数据库平台备份，PVC 和上传目录也要纳入备份 |
+| 副本数 | 先确认应用、文件目录和会话策略是否支持，再分别调整 `crest` 和 `crest-service` |
+| 资源限制 | 后端按查询量、导出量和并发访问设置 requests 与 limits；前端网关按静态资源和转发压力设置 |
+| Ingress | 固定域名、HTTPS、上传大小、WebSocket、超时时间和访问日志策略 |
+| 日志采集 | 同时采集前端网关、后端服务、MySQL 和监控组件日志 |
+| 监控接入 | 启用 Prometheus 指标后，确认 target、看板、告警规则和通知渠道 |
+| 备份 | 外部 MySQL 由数据库平台备份，PVC、上传目录、字体、导出文件和密钥也要纳入备份 |
+| 网络策略 | 保留后端和监控组件的内网访问边界，不直接暴露 `crest-service` 和 Prometheus |

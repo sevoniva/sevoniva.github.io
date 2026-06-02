@@ -19,17 +19,20 @@ crestctl status
 
 | 项目 | 正常表现 |
 | --- | --- |
-| 容器状态 | Crest、数据库和相关组件处于运行状态 |
+| 容器状态 | `crest`、`crest-service`、`mysql-crest` 和可选监控组件处于运行状态 |
 | 端口 | 对外访问端口正常监听 |
 | 启动时间 | 没有频繁重启 |
 | 日志 | 没有持续刷屏的错误 |
 | 磁盘 | 运行目录、日志目录和备份目录空间充足 |
+
+Crest v1.5.4 单机部署默认包含前端网关 `crest`、后端服务 `crest-service` 和元数据库 `mysql-crest`。启用监控后，还会出现 `crest-prometheus` 和 `crest-grafana`。
 
 Kubernetes 部署可检查：
 
 ```bash
 kubectl get pods -n crest
 kubectl get svc -n crest
+kubectl logs -n crest deploy/crest-service --tail=200
 kubectl logs -n crest deploy/crest --tail=200
 ```
 
@@ -57,6 +60,26 @@ kubectl logs -n crest deploy/crest --tail=200
 | `unauthorized` | 登录或认证异常 |
 | `database` | 数据库连接或 SQL 异常 |
 | `export` | 导出任务异常 |
+
+## 健康端点
+
+v1.5.4 的健康端点分为前端网关和后端服务两类：
+
+| 端点 | 说明 |
+| --- | --- |
+| `/healthz` | 前端 Nginx 网关健康检查，返回 `204` 表示网关可用 |
+| `/api/v1/actuator/health/liveness` | 后端存活检查，用于判断进程是否存活 |
+| `/api/v1/actuator/health/readiness` | 后端就绪检查，会校验数据库连接，适合发布后和流量接入前验证 |
+
+单机安装后可以通过对外端口验证：
+
+```bash
+curl -sSI http://127.0.0.1:8100/healthz
+curl -sS http://127.0.0.1:8100/api/v1/actuator/health/liveness
+curl -sS http://127.0.0.1:8100/api/v1/actuator/health/readiness
+```
+
+`liveness` 成功只能说明后端进程存在；`readiness` 成功才说明后端已经具备基本服务能力。
 
 ## 导出中心检查
 
@@ -132,3 +155,5 @@ kubectl logs -n crest deploy/crest --tail=200
 - 导出失败率异常。
 - 登录失败次数异常。
 - 关键日志错误数量异常。
+
+Crest v1.5.4 已提供 Prometheus 指标和 Grafana 看板，启用方式见 [监控与可观测性](/docs/crest/maintenance/observability)。

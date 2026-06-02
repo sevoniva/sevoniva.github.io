@@ -1,0 +1,205 @@
+---
+title: 监控与可观测性
+description: Crest v1.5.4 Prometheus 指标、Grafana 看板、启用方式、指标口径和安全边界。
+---
+
+Crest v1.5.4 支持按需接入 Prometheus 和 Grafana。默认安装不会启动监控组件，后端也不会开放 Prometheus 指标端点；需要监控时，由运维人员在部署配置中显式启用。
+
+启用后，后端服务通过 `/api/v1/actuator/prometheus` 输出指标，Prometheus 使用 Bearer Token 在容器网络或 Kubernetes 集群内抓取 `crest-service:8100`。前端网关不会公开该指标路径，避免把内部运行指标暴露给普通访问入口。
+
+## 运行结构
+
+v1.5.4 的运行形态已经拆分为前端网关和后端服务：
+
+| 服务 | 说明 |
+| --- | --- |
+| `crest` | Nginx 前端网关，提供静态资源，转发 `/api/v1/` 和 `/websocket` |
+| `crest-service` | Spring Boot 后端服务，提供接口、任务、OpenAPI 和指标端点 |
+| `mysql-crest` | Crest 元数据库，保存用户、权限、数据源、数据集、图表和系统配置 |
+| `crest-prometheus` | 可选，抓取后端指标并加载 Crest 告警规则 |
+| `crest-grafana` | 可选，加载 Prometheus 数据源和 Crest 运行看板 |
+
+Prometheus 应直接访问后端服务，不经过前端网关。这个边界在单机安装和 Kubernetes 部署中保持一致。
+
+## 接入方式
+
+| 方式 | 适用场景 | 做法 |
+| --- | --- | --- |
+| 只开启指标端点 | 企业已有 Prometheus / Grafana | 设置 `CREST_PROMETHEUS_ENABLED=true` 和 `CREST_PROMETHEUS_TOKEN`，由企业 Prometheus 增加抓取任务 |
+| 启用内置监控组件 | 小规模内网部署、验收环境、没有统一监控平台 | 同时设置 `CREST_PROMETHEUS_ENABLED=true` 和 `CREST_GRAFANA_ENABLED=true` |
+
+企业 Prometheus 抓取示例：
+
+```yaml
+scrape_configs:
+  - job_name: crest-service
+    metrics_path: /api/v1/actuator/prometheus
+    scheme: http
+    bearer_token: <prometheus-scrape-token>
+    static_configs:
+      - targets:
+          - crest-service:8100
+```
+
+Grafana 看板文件位于：
+
+```text
+installer/crest/observability/grafana/provisioning/dashboards/*.json
+```
+
+Prometheus 告警规则位于：
+
+```text
+installer/crest/observability/prometheus/rules/crest-alerts.yml
+```
+
+## 单机安装启用
+
+安装前在 `installer/install.conf` 中配置：
+
+```bash
+CREST_PROMETHEUS_ENABLED=true
+CREST_PROMETHEUS_TOKEN=
+CREST_PROMETHEUS_MAX_URI_TAGS=200
+
+CREST_GRAFANA_ENABLED=true
+CREST_GRAFANA_PORT=3000
+CREST_GRAFANA_ADMIN_USER=admin
+CREST_GRAFANA_ADMIN_PASSWORD=
+CREST_GRAFANA_PUBLIC_URL=
+```
+
+`CREST_PROMETHEUS_TOKEN` 留空时，安装脚本会生成随机 token，并写入：
+
+```text
+${CREST_BASE}/crest/conf/prometheus-token
+```
+
+`CREST_GRAFANA_ADMIN_PASSWORD` 留空时，安装脚本会生成 Grafana 管理员密码。生产环境建议在安装前显式配置，并纳入企业密码库。
+
+安装完成后检查：
+
+```bash
+crestctl status
+docker ps --filter name=crest-prometheus
+docker ps --filter name=crest-grafana
+```
+
+Grafana 默认访问地址：
+
+```text
+http://服务器IP:3000
+```
+
+Prometheus 默认不映射宿主机端口。需要临时排查时，可在服务器内进入容器网络或通过受控端口转发查看，不建议直接暴露 `9090`。
+
+## Kubernetes 启用
+
+Kubernetes 模式需要先创建 `crest-observability-secret`，再应用带 observability 后缀的 overlay。
+
+内置 MySQL 模式：
+
+```bash
+kubectl -n crest-internal create secret generic crest-observability-secret \
+  --from-literal=CREST_PROMETHEUS_TOKEN='<prometheus-scrape-token>' \
+  --from-literal=GF_SECURITY_ADMIN_PASSWORD='<grafana-admin-password>' \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -k deploy/kubernetes/internal-mysql-observability
+```
+
+外部 MySQL 模式：
+
+```bash
+kubectl -n crest-external create secret generic crest-observability-secret \
+  --from-literal=CREST_PROMETHEUS_TOKEN='<prometheus-scrape-token>' \
+  --from-literal=GF_SECURITY_ADMIN_PASSWORD='<grafana-admin-password>' \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -k deploy/kubernetes/external-mysql-observability
+```
+
+Grafana 和 Prometheus 默认以集群内服务方式运行。临时查看可使用：
+
+```bash
+kubectl -n crest-internal port-forward svc/crest-grafana 3000:3000
+kubectl -n crest-internal port-forward svc/crest-prometheus 9090:9090
+```
+
+生产环境对外暴露 Grafana 时，应按现场网关、认证、审计和访问控制规范处理。
+
+## 默认看板
+
+Crest v1.5.4 交付 6 个 Grafana 看板：
+
+| 看板 | 关注内容 |
+| --- | --- |
+| Crest 服务总览 | 采集状态、请求量、错误率、P95 延迟、CPU、磁盘和高频接口 |
+| Crest API 监控 | API 纳管率、模块请求量、模块错误量、接口明细和未访问接口 |
+| Crest 告警与 SLO | 可用性、5xx 错误率、P95 延迟、堆内存、连接池和当前告警 |
+| Crest JVM 运行时 | JVM 内存、GC、线程、类加载和运行时长 |
+| Crest 数据库与连接池 | Hikari 连接池、JDBC 连接、连接获取耗时和连接等待 |
+| Crest 任务与缓存 | 线程池、调度任务、缓存命中、缓存写入和缓存清理 |
+
+这些看板用于运行状态判断和故障定位。正式生产环境可以在此基础上增加业务侧指标、组织级报表和现场告警策略。
+
+## 指标口径
+
+| 指标 | 说明 |
+| --- | --- |
+| `up` | Prometheus 对 `crest-service` 的采集状态 |
+| `crest_api_route_info` | Crest 启动后注册的 API 路由清单 |
+| `http_server_requests_seconds_count` | HTTP 请求次数 |
+| `http_server_requests_seconds_sum` | HTTP 请求耗时总和 |
+| `http_server_requests_seconds_bucket` | HTTP 请求耗时直方图，用于 P95、P99 计算 |
+| `jvm_memory_used_bytes` | JVM 内存使用量 |
+| `jvm_gc_pause_seconds_*` | GC 停顿次数和耗时 |
+| `jvm_threads_*` | JVM 线程数量 |
+| `executor_*` | WebSocket、审计日志、调度等线程池状态 |
+| `hikaricp_connections_*` | Hikari 数据库连接池状态 |
+| `process_cpu_usage` | 当前后端进程 CPU 使用率 |
+
+`CREST_PROMETHEUS_MAX_URI_TAGS` 用于限制 HTTP 指标中的 URI 标签数量，默认值为 `200`。如果生产环境出现 URI 标签异常增长，应优先排查路由、代理和动态路径配置。
+
+## 告警建议
+
+| 目标 | 建议口径 | 默认阈值 |
+| --- | --- | --- |
+| 服务可用性 | `up{job="crest-service"}` | 连续 2 分钟采集失败触发 critical |
+| 5xx 错误率 | 5xx 请求速率 / 总请求速率 | 连续 5 分钟高于 2% 触发 warning |
+| P95 延迟 | HTTP 请求耗时直方图 P95 | 连续 5 分钟高于 2 秒触发 warning |
+| JVM 堆内存 | 已用堆内存 / 最大堆内存 | 连续 10 分钟高于 85% 触发 warning |
+| 数据库连接池 | 活跃连接 / 最大连接 | 连续 5 分钟高于 85% 触发 warning |
+| 线程池队列 | `executor_queued_tasks` 汇总 | 连续 5 分钟超过 100 触发 warning |
+
+内置 Prometheus 会加载默认规则并展示告警状态，但不内置 Alertmanager。需要电话、短信、IM 或工单通知时，应接入企业已有 Alertmanager、Grafana Alerting 或统一告警平台。
+
+## 系统页面
+
+管理员可进入：
+
+```text
+系统设置 -> 系统参数 -> 可观测性
+```
+
+页面会展示 Prometheus 是否开启、指标端点、token 是否已配置、Grafana 访问地址和已加载看板名称。页面不会展示 Prometheus token，也不会提供 token 编辑入口。
+
+## 安全边界
+
+- 不把 `CREST_PROMETHEUS_TOKEN` 写入公开文档、截图、前端页面或普通配置仓库。
+- 单机部署通过环境变量和安装生成文件管理 token；Kubernetes 部署通过 Secret 管理 token。
+- Prometheus 不直接暴露公网端口。
+- Grafana 使用独立强密码，并尽量接入现场 SSO、网关认证或堡垒机访问策略。
+- Kubernetes 支持 NetworkPolicy 时，保留 `deploy/kubernetes/observability/networkpolicy.yaml`，限制指标访问范围。
+- 指标数据属于内部运维数据，可能包含接口路径、状态码、异常标签和运行趋势，应按企业内部数据管理。
+
+## 常见问题
+
+| 现象 | 优先检查 |
+| --- | --- |
+| Grafana 面板显示 `No data` | Prometheus target、Grafana datasource、token、容器代理变量和看板时间范围 |
+| API 纳管率不是 100% | `crest_api_route_info` 是否存在，服务是否重启完成，Prometheus 是否已重新抓取 |
+| 5xx 错误率升高 | 后端日志、最近发布、数据库连接池、慢 SQL 和外部依赖 |
+| P95 延迟升高 | 慢接口、数据库连接池、CPU、GC 和线程池队列 |
+| 连接池使用率升高 | 慢 SQL、连接泄漏、数据库连接上限和数据库负载 |
+| JVM 堆内存升高 | 缓存增长、导出任务、对象保留和 GC 频率 |

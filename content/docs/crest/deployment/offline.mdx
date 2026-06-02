@@ -13,26 +13,26 @@ description: 制作 Crest 离线安装包，并在不能访问外网的服务器
 
 ```bash
 cd installer
-bash make-offline-package.sh v1.5.0 linux-amd64
+bash make-offline-package.sh v1.5.4 linux-amd64
 ```
 
 ARM 服务器使用：
 
 ```bash
-bash make-offline-package.sh v1.5.0 linux-arm64
+bash make-offline-package.sh v1.5.4 linux-arm64
 ```
 
 生成文件示例：
 
 ```text
-crest-offline-v1.5.0-linux-amd64.tar.gz
-crest-offline-v1.5.0-linux-arm64.tar.gz
+crest-offline-v1.5.4-linux-amd64.tar.gz
+crest-offline-v1.5.4-linux-arm64.tar.gz
 ```
 
 制作完成后建议生成校验值：
 
 ```bash
-sha256sum crest-offline-v1.5.0-linux-amd64.tar.gz
+sha256sum crest-offline-v1.5.4-linux-amd64.tar.gz
 ```
 
 把包名、版本、架构、生成时间和校验值一起记录。离线环境排查问题时，先确认拿到的是正确安装包。
@@ -45,8 +45,8 @@ sha256sum crest-offline-v1.5.0-linux-amd64.tar.gz
 | --- | --- |
 | 安装脚本 | `install.sh`、`uninstall.sh` |
 | 配置模板 | `install.conf`、后端配置模板 |
-| Docker Compose | 应用和 MySQL 编排文件 |
-| 镜像归档 | Crest 应用镜像和 MySQL 镜像 |
+| Docker Compose | 前端网关、后端服务、MySQL 和可选监控组件编排文件 |
+| 镜像归档 | Crest 前端镜像、后端镜像、MySQL 镜像和可选监控镜像 |
 | 说明文档 | 安装、升级和默认账号说明 |
 
 离线包是发布物，不建议提交到源码仓库。
@@ -54,15 +54,15 @@ sha256sum crest-offline-v1.5.0-linux-amd64.tar.gz
 ## 上传到目标服务器
 
 ```bash
-scp crest-offline-v1.5.0-linux-amd64.tar.gz user@server:/opt/packages/
+scp crest-offline-v1.5.4-linux-amd64.tar.gz user@server:/opt/packages/
 ```
 
 在目标服务器解压：
 
 ```bash
 cd /opt/packages
-tar -zxf crest-offline-v1.5.0-linux-amd64.tar.gz
-cd crest-offline-v1.5.0-linux-amd64
+tar -zxf crest-offline-v1.5.4-linux-amd64.tar.gz
+cd crest-offline-v1.5.4-linux-amd64
 ```
 
 解压后先检查目录内容是否完整，尤其是安装脚本、镜像归档和配置模板。文件缺失时不要继续安装，先重新传包。
@@ -89,6 +89,16 @@ CREST_SM4_KEY='0123456789abcdef'
 ```
 
 离线部署中的国密能力和在线部署一致。启用后，系统页面和用户操作流程不变；差异在于安装参数、密钥备份和升级恢复时必须保留同一组加密配置。
+
+需要同时启用 Prometheus 和 Grafana 时，在安装前增加：
+
+```bash
+CREST_PROMETHEUS_ENABLED=true
+CREST_GRAFANA_ENABLED=true
+CREST_GRAFANA_PORT=3000
+```
+
+离线包会包含对应镜像和配置模板；是否启用由目标服务器上的 `install.conf` 决定。
 
 执行安装：
 

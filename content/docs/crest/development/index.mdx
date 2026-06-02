@@ -1,6 +1,6 @@
 ---
 title: 开发总览
-description: Crest v1.5.1 开发指南入口，说明源码结构、开发边界、构建命令和提交前检查。
+description: Crest v1.5.4 开发指南入口，说明源码结构、开发边界、前后端分离开发方式、构建命令和提交前检查。
 ---
 
 本章面向需要阅读 Crest 源码、搭建本地环境、扩展功能或参与发布维护的开发者。
@@ -9,7 +9,7 @@ description: Crest v1.5.1 开发指南入口，说明源码结构、开发边界
 
 <Cards>
   <Card title="本地开发环境" href="/docs/crest/development/local-setup">
-    从 `v1.5.1` 源码开始，把本机开发环境跑起来。
+    从 `v1.5.4` 源码开始，把本机开发环境跑起来。
   </Card>
 </Cards>
 
@@ -32,7 +32,7 @@ description: Crest v1.5.1 开发指南入口，说明源码结构、开发边界
 
 ## 开发边界
 
-Crest `v1.5.1` 主要维护这些能力：
+Crest `v1.5.4` 主要维护这些能力：
 
 | 领域 | 典型内容 |
 | --- | --- |
@@ -57,6 +57,25 @@ Crest `v1.5.1` 主要维护这些能力：
 | Docker | 可选，构建镜像或安装包时使用 |
 
 本地开发不强制依赖 Docker。没有 Docker 时，可以用本机或内网 MySQL 启动后端和前端；需要交付镜像时再交给 CI 或构建机处理。
+
+## v1.5.4 开发方式
+
+v1.5.4 的发布形态已经拆成前端镜像和后端镜像：
+
+```text
+ghcr.io/sevoniva/crest-web:v1.5.4
+ghcr.io/sevoniva/crest-service:v1.5.4
+```
+
+开发时不要求同时改前后端。按当前任务选择最轻的链路：
+
+| 任务 | 本地需要运行 | 可以复用 |
+| --- | --- | --- |
+| 改前端页面、样式、交互 | `core/core-frontend` 的 `pnpm dev` | 已部署的后端，或 `crest-service:v1.5.4` |
+| 改后端接口、权限、任务、数据逻辑 | JDK 21、Maven、本地或内网 MySQL | `crest-web:v1.5.4` 前端网关 |
+| 验证部署、网关、镜像和监控 | Docker Compose 或 Kubernetes | 发布镜像和 `deploy/split` 模板 |
+
+前端开发时，确认 `core/core-frontend/config/dev.ts` 中的代理地址指向可用后端。后端开发时，确认元数据库、Flyway、加密密钥和初始密码已经按本地环境配置好。
 
 ## 常用构建命令
 
@@ -100,16 +119,23 @@ mvn -s .mvn/settings.xml \
   clean package \
   -Pstandalone \
   -DskipTests \
-  -Dmaven.test.skip=true
+  -Dmaven.test.skip=true \
+  -Dcrest.copy.frontend.skip=true
 ```
 
-构建本地镜像：
+构建本地后端镜像：
 
 ```bash
-docker build -t ghcr.io/sevoniva/crest:local .
+docker build -f Dockerfile.backend -t ghcr.io/sevoniva/crest-service:local .
 ```
 
-完整打包前先执行前端构建。`core-backend` 的 standalone profile 会把 `core/core-frontend/dist` 复制进后端静态资源目录。
+构建本地前端镜像：
+
+```bash
+docker build -f Dockerfile.frontend -t ghcr.io/sevoniva/crest-web:local .
+```
+
+前后端分离镜像打包时，后端 Maven 命令使用 `-Dcrest.copy.frontend.skip=true`，避免强依赖前端 `dist`。只有在验证旧式内嵌静态资源 JAR 时，才需要先构建前端并让 `core-backend` 复制 `core/core-frontend/dist`。
 
 ## 数据库迁移
 
@@ -120,7 +146,7 @@ docker build -t ghcr.io/sevoniva/crest:local .
 | `core/core-backend/src/main/resources/db/migration` | 核心表结构和基础初始化数据 |
 | `core/core-backend/src/main/resources/db/demo-migration` | 可选演示资源 |
 
-`v1.5.1` 的核心初始化脚本是：
+当前版本的核心初始化脚本是：
 
 ```text
 core/core-backend/src/main/resources/db/migration/V1.5.0.1__initial_schema.sql

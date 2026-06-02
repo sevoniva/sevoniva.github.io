@@ -1,28 +1,32 @@
 ---
 title: 本地开发环境
-description: Crest v1.5.1 本地开发环境搭建：拉代码、导数据库、配置本地变量、启动前后端、打包和排查常见问题。
+description: Crest v1.5.4 本地开发环境搭建：拉代码、导数据库、配置本地变量、启动前后端、打包和排查常见问题。
 ---
 
-这页只解决一件事：开发者第一次拿到 Crest `v1.5.1` 源码后，怎么在本机把项目跑起来，并且知道哪些配置该改、哪些配置不该动。
+这页只解决一件事：开发者第一次拿到 Crest `v1.5.4` 源码后，怎么在本机把项目跑起来，并且知道哪些配置该改、哪些配置不该动。
 
-开发环境不要求本机有 Docker。只要本机或内网有一套可连接的 MySQL 8.x，就可以启动后端和前端。
+开发环境不要求本机有 Docker。只要本机或内网有一套可连接的 MySQL 8.x，就可以启动后端和前端。v1.5.4 已经前后端分离，如果你只改后端，可以复用发布的前端镜像或已有前端环境；如果只改前端，可以复用发布的后端镜像或内网后端服务。
 
 <Callout type="info" title="先分清两类数据库">
   Crest 本身需要一个 MySQL 元数据库，用来保存用户、权限、数据源配置、数据集、图表、仪表盘和大屏。你在页面里新建的“数据源”是业务数据源，可能是 MySQL、Oracle、OceanBase、Excel 或 API。开发环境里最先要准备的是 Crest 元数据库，不是业务数据源。
 </Callout>
 
+<Callout type="info" title="v1.5.4 不要求前后端同时开发">
+  前端开发只需要能访问一个可用后端；后端开发只需要能连接 Crest 元数据库。只有验证镜像、安装包、网关转发或发布流程时，才需要同时构建前端和后端。
+</Callout>
+
 ## 最常用的开发流程
 
-有团队提供 `v1.5.1` 开发库 dump 时，按下面这条线走：
+有团队提供 `v1.5.4` 开发库 dump 时，按下面这条线走：
 
 <Steps>
   <Step>
     ### 拉代码
-    克隆 Crest，切到 `v1.5.1`，再从 tag 建自己的开发分支。
+    克隆 Crest，切到 `v1.5.4`，再从 tag 建自己的开发分支。
   </Step>
   <Step>
     ### 导入元数据库
-    新建本地 `crest` 库，把团队提供的 `v1.5.1` dump 导进去。
+    新建本地 `crest` 库，把团队提供的 `v1.5.4` dump 导进去。
   </Step>
   <Step>
     ### 写本地环境变量
@@ -76,16 +80,16 @@ mvn -s .mvn/settings.xml ...
 
 不要为了 Crest 修改全局 Maven 配置。全局配置一改，其他 Java 项目也会被影响。
 
-## 2. 拉取 v1.5.1 源码
+## 2. 拉取 v1.5.4 源码
 
 ```bash
 git clone https://github.com/sevoniva/Crest.git
 cd Crest
-git checkout v1.5.1
+git checkout v1.5.4
 git switch -c feat/my-local-work
 ```
 
-`v1.5.1` 是本页对应的版本。不要拿 `main`、其他功能分支或旧 dump 混在一起排查，否则数据库结构和代码很容易对不上。
+`v1.5.4` 是本页对应的版本。不要拿 `main`、其他功能分支或旧 dump 混在一起排查，否则数据库结构和代码很容易对不上。
 
 打开项目：
 
@@ -136,7 +140,7 @@ SELECT RELEASE_LOCK('crest_dev_check');
 
 ## 4. 导入数据
 
-### 方案 A：有 v1.5.1 开发库 dump
+### 方案 A：有 v1.5.4 开发库 dump
 
 这是团队协作时最省事的方式。dump 里通常已经包含管理员、菜单、权限、示例数据源、数据集、仪表盘和数据大屏。
 
@@ -146,7 +150,7 @@ DROP DATABASE IF EXISTS crest;
 CREATE DATABASE crest DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 "
 
-mysql -h127.0.0.1 -P3306 -uroot -p crest < crest-v1.5.1-dev.sql
+mysql -h127.0.0.1 -P3306 -uroot -p crest < crest-v1.5.4-dev.sql
 ```
 
 导入完整 dump 后，本地启动必须关闭 Flyway：
@@ -448,7 +452,62 @@ git diff -- core/core-frontend/config/dev.ts
 
 如果页面跳到 SSO 登录，先按前文 SQL 关闭本地 SSO。
 
-## 9. 开发时经常要改什么
+## 9. v1.5.4 前后端分离开发场景
+
+### 只改前端
+
+前端开发只需要一个可访问后端。后端可以来自三种来源：
+
+| 后端来源 | 适合场景 | 前端需要做什么 |
+| --- | --- | --- |
+| 本机后端 | 同时调接口和页面 | 保持 `target: 'http://localhost:8100'` |
+| 内网后端 | 只改页面、样式、交互 | 把 `config/dev.ts` 的 target 改成内网后端地址 |
+| 发布后端镜像 | 本机有 Docker，但不想编译 Java | 运行 `ghcr.io/sevoniva/crest-service:v1.5.4`，前端代理到该服务 |
+
+不要把个人内网地址提交到仓库。提交前执行：
+
+```bash
+git diff -- core/core-frontend/config/dev.ts
+```
+
+### 只改后端
+
+后端开发不要求本机有 Node.js、pnpm 或前端 dist。按前文配置好 MySQL、Flyway、加密密钥和文件目录后，可以直接启动 `io.crest.CoreApplication`。
+
+如果需要浏览器页面配合验证，有两种方式：
+
+| 方式 | 说明 |
+| --- | --- |
+| 使用已有前端环境 | 前端代理到你的后端端口 |
+| 使用发布前端镜像 | 运行 `ghcr.io/sevoniva/crest-web:v1.5.4`，让网关转发到你的后端 |
+
+后端独立打包时使用 `-Dcrest.copy.frontend.skip=true`，避免 Maven 因为没有前端 `dist` 而失败。
+
+### 验证前后端分离镜像
+
+需要验证镜像、Nginx 转发、WebSocket、健康检查或监控时，再同时构建前端和后端：
+
+```bash
+cd core/core-frontend
+pnpm install --frozen-lockfile
+pnpm run build:base
+
+cd ../..
+mvn -s .mvn/settings.xml \
+  -pl :core-backend -am \
+  clean package \
+  -Pstandalone \
+  -DskipTests \
+  -Dmaven.test.skip=true \
+  -Dcrest.copy.frontend.skip=true
+
+docker build -f Dockerfile.backend -t crest-service:local .
+docker build -f Dockerfile.frontend -t crest-web:local .
+```
+
+本机没有 Docker 时，不影响前端或后端源码开发。镜像构建可以交给 CI、构建机或有 Docker 的同事环境。
+
+## 10. 开发时经常要改什么
 
 | 场景 | 改哪里 | 注意事项 |
 | --- | --- | --- |
@@ -462,11 +521,31 @@ git diff -- core/core-frontend/config/dev.ts
 
 开发业务页面时，优先在系统里改数据源连接、数据集和仪表盘配置。只有确认是产品逻辑问题，再改代码。
 
-## 10. 打包
+## 11. 打包
 
-### 没有 Docker，只打 JAR
+### 没有 Docker，只打后端 JAR
 
-先构建前端：
+只验证后端产物时，不需要构建前端：
+
+```bash
+mvn -s .mvn/settings.xml \
+  -pl :core-backend -am \
+  clean package \
+  -Pstandalone \
+  -DskipTests \
+  -Dmaven.test.skip=true \
+  -Dcrest.copy.frontend.skip=true
+```
+
+产物：
+
+```text
+core/core-backend/target/CoreApplication.jar
+```
+
+### 需要内嵌前端静态资源
+
+只有验证旧式内嵌静态资源 JAR 时，才先构建前端：
 
 ```bash
 cd core/core-frontend
@@ -475,7 +554,7 @@ pnpm run build:base
 cd ../..
 ```
 
-再打后端包：
+再打后端包，不使用 `-Dcrest.copy.frontend.skip=true`：
 
 ```bash
 mvn -s .mvn/settings.xml \
@@ -492,7 +571,7 @@ mvn -s .mvn/settings.xml \
 core/core-backend/target/CoreApplication.jar
 ```
 
-`core-backend` 的 Maven profile 会把 `core/core-frontend/dist` 复制到后端静态资源目录。没有先构建前端时，后端打包会因为找不到前端 dist 失败。
+这种方式会把 `core/core-frontend/dist` 复制到后端静态资源目录。v1.5.4 的正式发布镜像采用前后端分离，日常后端开发一般不需要这样打包。
 
 ### 只做后端编译检查
 
@@ -507,15 +586,16 @@ mvn -s .mvn/settings.xml \
   -Dmaven.antrun.skip=true
 ```
 
-### 有 Docker，构建镜像
+### 有 Docker，构建前后端镜像
 
 ```bash
-docker build -t ghcr.io/sevoniva/crest:local .
+docker build -f Dockerfile.backend -t ghcr.io/sevoniva/crest-service:local .
+docker build -f Dockerfile.frontend -t ghcr.io/sevoniva/crest-web:local .
 ```
 
-本机没有 Docker 时，不影响源码开发。镜像构建可以交给 CI 或有 Docker 的构建机。
+构建前端镜像前，必须先执行 `pnpm run build:base`，确保 `core/core-frontend/dist` 已存在。
 
-## 11. 常见问题
+## 12. 常见问题
 
 ### 启动时报 `FUNCTION GET_LOCK does not exist`
 
@@ -578,17 +658,20 @@ echo $CREST_INITIAL_PASSWORD
 
 ### 打包时报前端 dist 不存在
 
-先执行：
+如果你只是打后端 JAR，优先加上 `-Dcrest.copy.frontend.skip=true`。只有打内嵌静态资源 JAR 或构建前端镜像时，才需要先生成前端 `dist`。
+
+生成前端 `dist`：
 
 ```bash
 cd core/core-frontend
+pnpm install --frozen-lockfile
 pnpm run build:base
 cd ../..
 ```
 
-再执行 Maven 打包。
+再执行对应的 Maven 打包或前端镜像构建命令。
 
-## 12. 提交前检查
+## 13. 提交前检查
 
 这些内容不能提交：
 

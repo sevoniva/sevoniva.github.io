@@ -5,6 +5,7 @@
     "index",
     "backup-restore",
     "upgrade-rollback",
-    "logs-health"
+    "logs-health",
+    "observability"
   ]
 }

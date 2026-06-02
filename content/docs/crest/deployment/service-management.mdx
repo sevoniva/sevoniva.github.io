@@ -40,7 +40,15 @@ docker compose ps
 ```bash
 cd /opt/crest
 docker compose logs -f crest
+docker compose logs -f crest-service
 docker compose logs -f mysql-crest
+```
+
+v1.5.4 单机部署中，`crest` 是前端 Nginx 网关，`crest-service` 是后端 Spring Boot 服务。页面打不开时先看 `crest`；登录、接口、数据集、导出和权限异常时优先看 `crest-service`。启用监控后，Prometheus 和 Grafana 日志分别查看：
+
+```bash
+docker compose logs -f crest-prometheus
+docker compose logs -f crest-grafana
 ```
 
 排查启动失败时，优先关注：
