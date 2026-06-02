@@ -80,6 +80,10 @@
   background: rgb(59 130 246 / 0.07);
 }
 
+.crest-docs-theme #nd-sidebar > div:last-child:has(> div.empty\:hidden:empty) {
+  display: none;
+}
+
 .crest-docs-theme #nd-page {
   max-width: 960px;
 }
