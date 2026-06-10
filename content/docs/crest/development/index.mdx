@@ -1,6 +1,6 @@
 ---
 title: 开发总览
-description: Crest v1.5.4 开发指南入口，说明源码结构、开发边界、前后端分离开发方式、构建命令和提交前检查。
+description: Crest v1.5.6 开发指南入口，说明源码结构、开发边界、前后端分离开发方式、构建命令和提交前检查。
 ---
 
 本章面向需要阅读 Crest 源码、搭建本地环境、扩展功能或参与发布维护的开发者。
@@ -9,7 +9,7 @@ description: Crest v1.5.4 开发指南入口，说明源码结构、开发边界
 
 <Cards>
   <Card title="本地开发环境" href="/docs/crest/development/local-setup">
-    从 `v1.5.4` 源码开始，完成本地开发环境启动。
+    从 `v1.5.6` 源码开始，完成本地开发环境启动。
   </Card>
 </Cards>
 
@@ -32,12 +32,12 @@ description: Crest v1.5.4 开发指南入口，说明源码结构、开发边界
 
 ## 开发边界
 
-Crest `v1.5.4` 主要维护这些能力：
+Crest `v1.5.6` 主要维护这些能力：
 
 | 领域 | 典型内容 |
 | --- | --- |
 | 数据准备 | 数据源、数据集、SQL 数据集、字段管理、缓存同步 |
-| 可视化分析 | 图表、仪表盘、数据大屏、分享、导出 |
+| 可视化分析 | 图表、仪表盘、数据大屏、数据门户、分享、导出 |
 | 数据治理 | 字段级数据血缘 |
 | 平台管理 | 用户、组织、角色、权限、系统参数、站点设置、字体管理 |
 | 安全能力 | 登录鉴权、审计、SSO、国密模式、敏感配置加密 |
@@ -58,21 +58,21 @@ Crest `v1.5.4` 主要维护这些能力：
 
 本地开发不强制依赖 Docker。没有 Docker 时，可以用本机或内网 MySQL 启动后端和前端；需要交付镜像时再交给 CI 或构建机处理。
 
-## v1.5.4 开发方式
+## v1.5.6 开发方式
 
-v1.5.4 的发布形态已经拆成前端镜像和后端镜像：
+当前发布形态已经拆成前端镜像和后端镜像：
 
 ```text
-ghcr.io/sevoniva/crest-web:v1.5.4
-ghcr.io/sevoniva/crest-service:v1.5.4
+ghcr.io/sevoniva/crest-web:v1.5.6
+ghcr.io/sevoniva/crest-service:v1.5.6
 ```
 
 开发时无需同时运行前后端。可按当前任务选择对应开发链路：
 
 | 任务 | 本地需要运行 | 可以复用 |
 | --- | --- | --- |
-| 改前端页面、样式、交互 | `core/core-frontend` 的 `pnpm dev` | 已部署的后端，或 `crest-service:v1.5.4` |
-| 改后端接口、权限、任务、数据逻辑 | JDK 21、Maven、本地或内网 MySQL | `crest-web:v1.5.4` 前端网关 |
+| 改前端页面、样式、交互 | `core/core-frontend` 的 `pnpm dev` | 已部署的后端，或 `crest-service:v1.5.6` |
+| 改后端接口、权限、任务、数据逻辑 | JDK 21、Maven、本地或内网 MySQL | `crest-web:v1.5.6` 前端网关 |
 | 验证部署、网关、镜像和监控 | Docker Compose 或 Kubernetes | 发布镜像和 `deploy/split` 模板 |
 
 前端开发时，确认 `core/core-frontend/config/dev.ts` 中的代理地址指向可用后端。后端开发时，确认元数据库、Flyway、加密密钥和初始密码已经按本地环境配置好。

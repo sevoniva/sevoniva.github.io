@@ -4,6 +4,7 @@
   "pages": [
     "index",
     "login-workspace",
+    "portal",
     "datasource",
     "dataset",
     "chart",

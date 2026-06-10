@@ -1,32 +1,32 @@
 ---
 title: 本地开发环境
-description: Crest v1.5.4 本地开发环境搭建：拉代码、导数据库、配置本地变量、启动前后端、打包和排查常见问题。
+description: Crest v1.5.6 本地开发环境搭建：拉代码、导数据库、配置本地变量、启动前后端、打包和排查常见问题。
 ---
 
-本页适用于首次搭建 Crest `v1.5.4` 开发环境的开发者，说明源码获取、元数据库准备、本地配置、服务启动、打包和常见问题处理。
+本页适用于首次搭建 Crest `v1.5.6` 开发环境的开发者，说明源码获取、元数据库准备、本地配置、服务启动、打包和常见问题处理。
 
-开发环境不要求本机有 Docker。只要本机或内网有一套可连接的 MySQL 8.x，就可以启动后端和前端。v1.5.4 已经前后端分离：仅改后端时，可以复用发布的前端镜像或已有前端环境；仅改前端时，可以复用发布的后端镜像或内网后端服务。
+开发环境不要求本机有 Docker。只要本机或内网有一套可连接的 MySQL 8.x，就可以启动后端和前端。v1.5.6 已经前后端分离：仅改后端时，可以复用发布的前端镜像或已有前端环境；仅改前端时，可以复用发布的后端镜像或内网后端服务。
 
 <Callout type="info" title="先分清两类数据库">
   Crest 本身需要一个 MySQL 元数据库，用来保存用户、权限、数据源配置、数据集、图表、仪表盘和大屏。你在页面里新建的“数据源”是业务数据源，可能是 MySQL、Oracle、OceanBase、Excel 或 API。开发环境里最先要准备的是 Crest 元数据库，不是业务数据源。
 </Callout>
 
-<Callout type="info" title="v1.5.4 支持前后端分离开发">
+<Callout type="info" title="v1.5.6 支持前后端分离开发">
   前端开发只需要能访问一个可用后端；后端开发只需要能连接 Crest 元数据库。只有验证镜像、安装包、网关转发或发布流程时，才需要同时构建前端和后端。
 </Callout>
 
 ## 最常用的开发流程
 
-如团队已提供 `v1.5.4` 开发库 dump，建议按以下流程搭建：
+如团队已提供 `v1.5.6` 开发库 dump，建议按以下流程搭建：
 
 <Steps>
   <Step>
     ### 拉代码
-    克隆 Crest，切到 `v1.5.4`，再从 tag 建自己的开发分支。
+    克隆 Crest，切到 `v1.5.6`，再从 tag 建自己的开发分支。
   </Step>
   <Step>
     ### 导入元数据库
-    新建本地 `crest` 库，把团队提供的 `v1.5.4` dump 导进去。
+    新建本地 `crest` 库，把团队提供的 `v1.5.6` dump 导进去。
   </Step>
   <Step>
     ### 写本地环境变量
@@ -80,16 +80,16 @@ mvn -s .mvn/settings.xml ...
 
 不应为 Crest 修改全局 Maven 配置。全局配置会影响同一台机器上的其他 Java 项目。
 
-## 2. 拉取 v1.5.4 源码
+## 2. 拉取 v1.5.6 源码
 
 ```bash
 git clone https://github.com/sevoniva/Crest.git
 cd Crest
-git checkout v1.5.4
+git checkout v1.5.6
 git switch -c feat/my-local-work
 ```
 
-`v1.5.4` 是本页对应的版本。排查问题时不应混用 `main`、其他功能分支或旧版本 dump，避免数据库结构与代码版本不一致。
+`v1.5.6` 是本页对应的版本。排查问题时不应混用 `main`、其他功能分支或旧版本 dump，避免数据库结构与代码版本不一致。
 
 打开项目：
 
@@ -140,7 +140,7 @@ SELECT RELEASE_LOCK('crest_dev_check');
 
 ## 4. 导入数据
 
-### 方案 A：有 v1.5.4 开发库 dump
+### 方案 A：有 v1.5.6 开发库 dump
 
 这是团队协作场景下的推荐方式。dump 通常已经包含管理员、菜单、权限、示例数据源、数据集、仪表盘和数据大屏。
 
@@ -150,7 +150,7 @@ DROP DATABASE IF EXISTS crest;
 CREATE DATABASE crest DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 "
 
-mysql -h127.0.0.1 -P3306 -uroot -p crest < crest-v1.5.4-dev.sql
+mysql -h127.0.0.1 -P3306 -uroot -p crest < crest-v1.5.6-dev.sql
 ```
 
 导入完整 dump 后，本地启动必须关闭 Flyway：
@@ -425,6 +425,8 @@ pnpm dev
 http://localhost:8080
 ```
 
+如果 `8080` 被占用，Vite 可能自动切到 `8081` 或其他本地端口。v1.5.6 已兼容本地开发端口变化，登录请求不应因为端口从 `8080` 切到 `8081` 就被 CORS 拦截。若使用自定义域名、内网 IP 或代理地址访问前端，再按实际访问地址补充 `CREST_ORIGIN_LIST`。
+
 开发代理在：
 
 ```text
@@ -452,17 +454,19 @@ git diff -- core/core-frontend/config/dev.ts
 
 如果页面跳到 SSO 登录，先按前文 SQL 关闭本地 SSO。
 
-## 9. v1.5.4 前后端分离开发场景
+v1.5.6 统一登录入口。本地账号、管理员账号和应急登录都从同一登录页进入；旧 token 损坏或过期时，刷新页面后应回到登录页，而不是停留在空白页面。
+
+## 9. v1.5.6 前后端分离开发场景
 
 ### 只改前端
 
-前端开发只需要一个可访问后端。后端可以来自三种来源：
+前端开发需要一个可访问后端。后端可来自三种来源：
 
 | 后端来源 | 适合场景 | 前端需要做什么 |
 | --- | --- | --- |
 | 本机后端 | 同时调接口和页面 | 保持 `target: 'http://localhost:8100'` |
 | 内网后端 | 只改页面、样式、交互 | 把 `config/dev.ts` 的 target 改成内网后端地址 |
-| 发布后端镜像 | 本机有 Docker，但不想编译 Java | 运行 `ghcr.io/sevoniva/crest-service:v1.5.4`，前端代理到该服务 |
+| 发布后端镜像 | 本机有 Docker，但不想编译 Java | 运行 `ghcr.io/sevoniva/crest-service:v1.5.6`，前端代理到该服务 |
 
 提交前应确认未提交个人内网地址：
 
@@ -479,7 +483,7 @@ git diff -- core/core-frontend/config/dev.ts
 | 方式 | 说明 |
 | --- | --- |
 | 使用已有前端环境 | 前端代理到你的后端端口 |
-| 使用发布前端镜像 | 运行 `ghcr.io/sevoniva/crest-web:v1.5.4`，让网关转发到你的后端 |
+| 使用发布前端镜像 | 运行 `ghcr.io/sevoniva/crest-web:v1.5.6`，让网关转发到你的后端 |
 
 后端独立打包时使用 `-Dcrest.copy.frontend.skip=true`，避免 Maven 因为没有前端 `dist` 而失败。
 
@@ -571,7 +575,7 @@ mvn -s .mvn/settings.xml \
 core/core-backend/target/CoreApplication.jar
 ```
 
-这种方式会把 `core/core-frontend/dist` 复制到后端静态资源目录。v1.5.4 的正式发布镜像采用前后端分离，日常后端开发一般不需要这样打包。
+这种方式会把 `core/core-frontend/dist` 复制到后端静态资源目录。v1.5.6 的正式发布镜像采用前后端分离，日常后端开发一般不需要这样打包。
 
 ### 只做后端编译检查
 

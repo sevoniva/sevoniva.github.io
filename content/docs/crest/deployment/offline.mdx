@@ -13,33 +13,35 @@ description: 制作 Crest 离线安装包，并在不能访问外网的服务器
 
 ```bash
 cd installer
-bash make-offline-package.sh v1.5.4 linux-amd64
+bash make-offline-package.sh v1.5.6 linux-amd64
 ```
 
 ARM 服务器使用：
 
 ```bash
-bash make-offline-package.sh v1.5.4 linux-arm64
+bash make-offline-package.sh v1.5.6 linux-arm64
 ```
 
 生成文件示例：
 
 ```text
-crest-offline-v1.5.4-linux-amd64.tar.gz
-crest-offline-v1.5.4-linux-arm64.tar.gz
+crest-offline-v1.5.6-linux-amd64.tar.gz
+crest-offline-v1.5.6-linux-arm64.tar.gz
+crest-app-images-v1.5.6-linux-amd64.tar.gz
+crest-app-images-v1.5.6-linux-arm64.tar.gz
 ```
 
 制作完成后建议生成校验值：
 
 ```bash
-sha256sum crest-offline-v1.5.4-linux-amd64.tar.gz
+sha256sum crest-offline-v1.5.6-linux-amd64.tar.gz
 ```
 
 把包名、版本、架构、生成时间和校验值一起记录。离线环境排查问题时，先确认拿到的是正确安装包。
 
 ## 离线包内容
 
-离线包通常包含：
+完整离线包通常包含：
 
 | 内容 | 说明 |
 | --- | --- |
@@ -49,20 +51,29 @@ sha256sum crest-offline-v1.5.4-linux-amd64.tar.gz
 | 镜像归档 | Crest 前端镜像、后端镜像、MySQL 镜像和可选监控镜像 |
 | 说明文档 | 安装、升级和默认账号说明 |
 
-离线包是发布物，不建议提交到源码仓库。
+从 v1.5.5 起，Release 同时提供应用镜像升级包：
+
+| 包类型 | 用途 | 包含内容 |
+| --- | --- | --- |
+| `crest-offline-*` | 全新离线安装或完整交付 | 安装脚本、配置模板、Compose、Crest 前后端镜像、MySQL 镜像、可选监控配置和升级 SQL |
+| `crest-app-images-*` | 已有环境只替换 Crest 前后端应用 | Crest 后端镜像、Crest 前端镜像、增量升级 SQL 和加载说明 |
+
+应用镜像升级包不包含 MySQL、Prometheus、Grafana 镜像，也不包含完整安装脚本。已有内网环境仅需升级前后端服务时，优先使用该包，可明显降低传输体积。
+
+离线包和应用镜像升级包都是发布物，不建议提交到源码仓库。
 
 ## 上传到目标服务器
 
 ```bash
-scp crest-offline-v1.5.4-linux-amd64.tar.gz user@server:/opt/packages/
+scp crest-offline-v1.5.6-linux-amd64.tar.gz user@server:/opt/packages/
 ```
 
 在目标服务器解压：
 
 ```bash
 cd /opt/packages
-tar -zxf crest-offline-v1.5.4-linux-amd64.tar.gz
-cd crest-offline-v1.5.4-linux-amd64
+tar -zxf crest-offline-v1.5.6-linux-amd64.tar.gz
+cd crest-offline-v1.5.6-linux-amd64
 ```
 
 解压后先检查目录内容是否完整，尤其是安装脚本、镜像归档和配置模板。文件缺失时不要继续安装，先重新传包。
@@ -130,3 +141,24 @@ bash install.sh
 </Callout>
 
 离线环境建议保留安装包和安装日志。后续升级或回滚时，能快速确认当前环境是由哪个包安装的。
+
+## 离线升级说明
+
+全新安装不需要手动执行 `upgrade-sql/` 中的 SQL。已有环境升级时，按来源版本判断：
+
+| 来源版本 | 升级到 v1.5.6 的处理 |
+| --- | --- |
+| v1.5.5 | 备份后替换前后端镜像，不需要执行新增升级 SQL |
+| v1.5.4 | 先执行 `upgrade-sql/v1.5.4_to_v1.5.5.sql`，再替换 v1.5.6 前后端镜像 |
+| 更早开发环境 | 建议导出业务资源，在全新 v1.5.6 环境中导入 |
+
+单机内置 MySQL 环境执行 v1.5.4 到 v1.5.5 的升级 SQL 示例：
+
+```bash
+set -a
+source /opt/crest/.env
+set +a
+docker exec -i mysql-crest mysql -uroot -p"${CREST_DB_PASSWORD}" "${CREST_DB_NAME:-crest}" < upgrade-sql/v1.5.4_to_v1.5.5.sql
+```
+
+如果安装时修改过 `CREST_BASE`，请把 `/opt/crest/.env` 替换为实际运行目录中的 `.env`。外部 MySQL 环境可在数据库服务器或运维机执行同一 SQL 文件，目标库为 Crest 元数据库。

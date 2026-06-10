@@ -1,15 +1,15 @@
 ---
 title: 监控与可观测性
-description: Crest v1.5.4 Prometheus 指标、Grafana 看板、启用方式、指标口径和安全边界。
+description: Crest Prometheus 指标、Grafana 看板、启用方式、指标口径和安全边界。
 ---
 
-Crest v1.5.4 支持按需接入 Prometheus 和 Grafana。默认安装不会启动监控组件，后端也不会开放 Prometheus 指标端点；需要监控时，由运维人员在部署配置中显式启用。
+Crest v1.5.4 起支持按需接入 Prometheus 和 Grafana。默认安装不会启动监控组件，后端也不会开放 Prometheus 指标端点；需要监控时，由运维人员在部署配置中显式启用。
 
 启用后，后端服务通过 `/api/v1/actuator/prometheus` 输出指标，Prometheus 使用 Bearer Token 在容器网络或 Kubernetes 集群内抓取 `crest-service:8100`。前端网关不会公开该指标路径，避免把内部运行指标暴露给普通访问入口。
 
 ## 运行结构
 
-v1.5.4 的运行形态已经拆分为前端网关和后端服务：
+当前版本的运行形态已经拆分为前端网关和后端服务：
 
 | 服务 | 说明 |
 | --- | --- |
@@ -130,7 +130,7 @@ kubectl -n crest-internal port-forward svc/crest-prometheus 9090:9090
 
 ## 默认看板
 
-Crest v1.5.4 交付 6 个 Grafana 看板：
+Crest 交付 6 个 Grafana 看板：
 
 | 看板 | 关注内容 |
 | --- | --- |
