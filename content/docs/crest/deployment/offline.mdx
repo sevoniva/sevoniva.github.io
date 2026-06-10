@@ -13,28 +13,28 @@ description: 制作 Crest 离线安装包，并在不能访问外网的服务器
 
 ```bash
 cd installer
-bash make-offline-package.sh v1.5.6 linux-amd64
+bash make-offline-package.sh v1.5.7 linux-amd64
 ```
 
 ARM 服务器使用：
 
 ```bash
-bash make-offline-package.sh v1.5.6 linux-arm64
+bash make-offline-package.sh v1.5.7 linux-arm64
 ```
 
 生成文件示例：
 
 ```text
-crest-offline-v1.5.6-linux-amd64.tar.gz
-crest-offline-v1.5.6-linux-arm64.tar.gz
-crest-app-images-v1.5.6-linux-amd64.tar.gz
-crest-app-images-v1.5.6-linux-arm64.tar.gz
+crest-offline-v1.5.7-linux-amd64.tar.gz
+crest-offline-v1.5.7-linux-arm64.tar.gz
+crest-app-images-v1.5.7-linux-amd64.tar.gz
+crest-app-images-v1.5.7-linux-arm64.tar.gz
 ```
 
 制作完成后建议生成校验值：
 
 ```bash
-sha256sum crest-offline-v1.5.6-linux-amd64.tar.gz
+sha256sum crest-offline-v1.5.7-linux-amd64.tar.gz
 ```
 
 把包名、版本、架构、生成时间和校验值一起记录。离线环境排查问题时，先确认拿到的是正确安装包。
@@ -65,15 +65,15 @@ sha256sum crest-offline-v1.5.6-linux-amd64.tar.gz
 ## 上传到目标服务器
 
 ```bash
-scp crest-offline-v1.5.6-linux-amd64.tar.gz user@server:/opt/packages/
+scp crest-offline-v1.5.7-linux-amd64.tar.gz user@server:/opt/packages/
 ```
 
 在目标服务器解压：
 
 ```bash
 cd /opt/packages
-tar -zxf crest-offline-v1.5.6-linux-amd64.tar.gz
-cd crest-offline-v1.5.6-linux-amd64
+tar -zxf crest-offline-v1.5.7-linux-amd64.tar.gz
+cd crest-offline-v1.5.7-linux-amd64
 ```
 
 解压后先检查目录内容是否完整，尤其是安装脚本、镜像归档和配置模板。文件缺失时不要继续安装，先重新传包。
@@ -146,11 +146,14 @@ bash install.sh
 
 全新安装不需要手动执行 `upgrade-sql/` 中的 SQL。已有环境升级时，按来源版本判断：
 
-| 来源版本 | 升级到 v1.5.6 的处理 |
+| 来源版本 | 升级到 v1.5.7 的处理 |
 | --- | --- |
+| v1.5.6 | 备份后替换前后端镜像，不需要执行新增升级 SQL |
 | v1.5.5 | 备份后替换前后端镜像，不需要执行新增升级 SQL |
-| v1.5.4 | 先执行 `upgrade-sql/v1.5.4_to_v1.5.5.sql`，再替换 v1.5.6 前后端镜像 |
-| 更早开发环境 | 建议导出业务资源，在全新 v1.5.6 环境中导入 |
+| v1.5.4 | 先执行 `upgrade-sql/v1.5.4_to_v1.5.5.sql`，再替换 v1.5.7 前后端镜像 |
+| 更早开发环境 | 建议导出业务资源，在全新 v1.5.7 环境中导入 |
+
+v1.5.7 没有数据库结构、系统参数或初始化数据变更。已有 v1.5.6 环境升级到 v1.5.7 时，重点验证 MySQL 数据集缓存、公开分享链接、API 数据源 JsonPath 解析和数据源校验，不需要执行新增升级 SQL。
 
 单机内置 MySQL 环境执行 v1.5.4 到 v1.5.5 的升级 SQL 示例：
 

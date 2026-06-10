@@ -1,9 +1,9 @@
 ---
 title: Kubernetes 部署
-description: 使用 deploy/kubernetes 清单部署 Crest v1.5.6，支持前后端分离、内置 MySQL、外部 MySQL 和可选监控组件。
+description: 使用 deploy/kubernetes 清单部署 Crest v1.5.7，支持前后端分离、内置 MySQL、外部 MySQL 和可选监控组件。
 ---
 
-Crest 提供 Kustomize 清单，适合部署到 Kubernetes 集群。v1.5.6 的集群部署采用前后端分离结构：`crest` 是前端 Nginx 网关，`crest-service` 是后端 Spring Boot 服务，元数据库可选择内置 MySQL 或外部 MySQL。需要运行监控时，可启用 Prometheus 和 Grafana overlay。
+Crest 提供 Kustomize 清单，适合部署到 Kubernetes 集群。v1.5.7 的集群部署采用前后端分离结构：`crest` 是前端 Nginx 网关，`crest-service` 是后端 Spring Boot 服务，元数据库可选择内置 MySQL 或外部 MySQL。需要运行监控时，可启用 Prometheus 和 Grafana overlay。
 
 Kubernetes 部署更适合已有集群和运维体系的团队。部署重点在于将命名空间、Secret、PVC、Service、Ingress、数据库、日志、备份和监控纳入统一管理。首次验证可以使用内置 MySQL，生产环境建议优先评估外部 MySQL。
 
@@ -53,8 +53,8 @@ deploy/kubernetes
 默认应用镜像：
 
 ```text
-ghcr.io/sevoniva/crest-service:v1.5.6
-ghcr.io/sevoniva/crest-web:v1.5.6
+ghcr.io/sevoniva/crest-service:v1.5.7
+ghcr.io/sevoniva/crest-web:v1.5.7
 ```
 
 默认服务：

@@ -5,7 +5,7 @@ description: 使用 installer/install.sh 在线安装 Crest，并理解关键配
 
 单机在线安装适合有网络访问能力的服务器。安装脚本会自动准备运行目录、配置文件、Docker Compose、系统服务和初始密码。
 
-这种方式适合演示环境、内部小规模使用或单节点部署。Crest v1.5.6 单机安装会启动前端网关 `crest`、后端服务 `crest-service` 和元数据库 `mysql-crest`；需要监控时，还可以同时启用 `crest-prometheus` 和 `crest-grafana`。正式使用前仍然要按生产标准准备域名、HTTPS、备份、密码和运维责任人。
+这种方式适合演示环境、内部小规模使用或单节点部署。Crest v1.5.7 单机安装会启动前端网关 `crest`、后端服务 `crest-service` 和元数据库 `mysql-crest`；需要监控时，还可以同时启用 `crest-prometheus` 和 `crest-grafana`。正式使用前仍然要按生产标准准备域名、HTTPS、备份、密码和运维责任人。
 
 ## 安装目录
 
@@ -38,8 +38,8 @@ CREST_BASE=/opt
 CREST_PORT=8100
 CREST_CONTEXT_PATH=
 CREST_LOGIN_TIMEOUT=960
-CREST_BACKEND_IMAGE=ghcr.io/sevoniva/crest-service:v1.5.6
-CREST_FRONTEND_IMAGE=ghcr.io/sevoniva/crest-web:v1.5.6
+CREST_BACKEND_IMAGE=ghcr.io/sevoniva/crest-service:v1.5.7
+CREST_FRONTEND_IMAGE=ghcr.io/sevoniva/crest-web:v1.5.7
 CREST_MYSQL_IMAGE=mysql:8.0.43
 CREST_ORIGIN_LIST=http://localhost:8100
 CREST_CRYPTO_MODE=standard

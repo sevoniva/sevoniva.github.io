@@ -25,7 +25,7 @@ crestctl status
 | 日志 | 没有持续刷屏的错误 |
 | 磁盘 | 运行目录、日志目录和备份目录空间充足 |
 
-Crest v1.5.6 单机部署默认包含前端网关 `crest`、后端服务 `crest-service` 和元数据库 `mysql-crest`。启用监控后，还会出现 `crest-prometheus` 和 `crest-grafana`。
+Crest v1.5.7 单机部署默认包含前端网关 `crest`、后端服务 `crest-service` 和元数据库 `mysql-crest`。启用监控后，还会出现 `crest-prometheus` 和 `crest-grafana`。
 
 Kubernetes 部署可检查：
 
@@ -63,7 +63,7 @@ kubectl logs -n crest deploy/crest --tail=200
 
 ## 健康端点
 
-v1.5.6 的健康端点分为前端网关和后端服务两类：
+v1.5.7 的健康端点分为前端网关和后端服务两类：
 
 | 端点 | 说明 |
 | --- | --- |
